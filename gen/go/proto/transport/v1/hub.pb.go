@@ -33,15 +33,16 @@ type DataPacket struct {
 	Inputs *structpb.Struct `protobuf:"bytes,3,opt,name=inputs,proto3" json:"inputs,omitempty"`
 	// Transports mirror the Story's declared transports for downstream introspection.
 	Transports []*TransportDescriptor `protobuf:"bytes,4,rep,name=transports,proto3" json:"transports,omitempty"`
-	// Optional media payloads.
+	// frame carries exactly one media payload alongside the structured packet context.
 	//
 	// Types that are valid to be assigned to Frame:
 	//
 	//	*DataPacket_Audio
 	//	*DataPacket_Video
 	//	*DataPacket_Binary
-	Frame         isDataPacket_Frame `protobuf_oneof:"frame"`
-	Envelope      *StreamEnvelope    `protobuf:"bytes,8,opt,name=envelope,proto3" json:"envelope,omitempty"`
+	Frame isDataPacket_Frame `protobuf_oneof:"frame"`
+	// envelope carries ordering, partitioning, and chunking metadata for the packet.
+	Envelope      *StreamEnvelope `protobuf:"bytes,8,opt,name=envelope,proto3" json:"envelope,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -150,14 +151,17 @@ type isDataPacket_Frame interface {
 }
 
 type DataPacket_Audio struct {
+	// audio carries an audio payload for the packet.
 	Audio *AudioFrame `protobuf:"bytes,5,opt,name=audio,proto3,oneof"`
 }
 
 type DataPacket_Video struct {
+	// video carries a video payload for the packet.
 	Video *VideoFrame `protobuf:"bytes,6,opt,name=video,proto3,oneof"`
 }
 
 type DataPacket_Binary struct {
+	// binary carries an opaque binary payload for the packet.
 	Binary *BinaryFrame `protobuf:"bytes,7,opt,name=binary,proto3,oneof"`
 }
 
@@ -167,10 +171,13 @@ func (*DataPacket_Video) isDataPacket_Frame() {}
 
 func (*DataPacket_Binary) isDataPacket_Frame() {}
 
+// ProcessRequest carries either a routed packet or backpressure updates from the sender.
 type ProcessRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Packet        *DataPacket            `protobuf:"bytes,1,opt,name=packet,proto3" json:"packet,omitempty"`
-	Flow          *FlowControl           `protobuf:"bytes,2,opt,name=flow,proto3" json:"flow,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// packet is the next transport payload emitted into the hub stream.
+	Packet *DataPacket `protobuf:"bytes,1,opt,name=packet,proto3" json:"packet,omitempty"`
+	// flow updates acknowledgement state or backpressure hints without carrying a packet.
+	Flow          *FlowControl `protobuf:"bytes,2,opt,name=flow,proto3" json:"flow,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -219,10 +226,13 @@ func (x *ProcessRequest) GetFlow() *FlowControl {
 	return nil
 }
 
+// ProcessResponse carries either a routed packet or backpressure updates from the hub.
 type ProcessResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Packet        *DataPacket            `protobuf:"bytes,1,opt,name=packet,proto3" json:"packet,omitempty"`
-	Flow          *FlowControl           `protobuf:"bytes,2,opt,name=flow,proto3" json:"flow,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// packet is the next transport payload emitted back to the caller.
+	Packet *DataPacket `protobuf:"bytes,1,opt,name=packet,proto3" json:"packet,omitempty"`
+	// flow updates acknowledgement state or backpressure hints without carrying a packet.
+	Flow          *FlowControl `protobuf:"bytes,2,opt,name=flow,proto3" json:"flow,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

@@ -22,6 +22,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// ControlAction enumerates the standard connector control-plane actions.
 type ControlAction int32
 
 const (
@@ -113,6 +114,7 @@ func (ControlAction) EnumDescriptor() ([]byte, []int) {
 	return file_transport_v1_transport_proto_rawDescGZIP(), []int{0}
 }
 
+// FlowControlSignal models upstream backpressure transitions without ambiguous booleans.
 type FlowControlSignal int32
 
 const (
@@ -162,13 +164,19 @@ func (FlowControlSignal) EnumDescriptor() ([]byte, []int) {
 	return file_transport_v1_transport_proto_rawDescGZIP(), []int{1}
 }
 
+// AudioFrame carries raw or passthrough audio bytes plus basic timing metadata.
 type AudioFrame struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Pcm           []byte                 `protobuf:"bytes,1,opt,name=pcm,proto3" json:"pcm,omitempty"`
-	SampleRateHz  int32                  `protobuf:"varint,2,opt,name=sample_rate_hz,json=sampleRateHz,proto3" json:"sample_rate_hz,omitempty"`
-	Channels      int32                  `protobuf:"varint,3,opt,name=channels,proto3" json:"channels,omitempty"`
-	Codec         string                 `protobuf:"bytes,4,opt,name=codec,proto3" json:"codec,omitempty"` // e.g., "pcm16", "opus" when passthrough
-	TimestampMs   uint64                 `protobuf:"varint,5,opt,name=timestamp_ms,json=timestampMs,proto3" json:"timestamp_ms,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// pcm contains the audio payload bytes for this frame.
+	Pcm []byte `protobuf:"bytes,1,opt,name=pcm,proto3" json:"pcm,omitempty"`
+	// sample_rate_hz is the sampling frequency associated with the payload.
+	SampleRateHz int32 `protobuf:"varint,2,opt,name=sample_rate_hz,json=sampleRateHz,proto3" json:"sample_rate_hz,omitempty"`
+	// channels is the number of interleaved audio channels encoded in pcm.
+	Channels int32 `protobuf:"varint,3,opt,name=channels,proto3" json:"channels,omitempty"`
+	// codec names the audio encoding (for example, "pcm16" or "opus").
+	Codec string `protobuf:"bytes,4,opt,name=codec,proto3" json:"codec,omitempty"` // e.g., "pcm16", "opus" when passthrough
+	// timestamp_ms records when the frame was captured or should be presented.
+	TimestampMs   uint64 `protobuf:"varint,5,opt,name=timestamp_ms,json=timestampMs,proto3" json:"timestamp_ms,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -238,14 +246,21 @@ func (x *AudioFrame) GetTimestampMs() uint64 {
 	return 0
 }
 
+// VideoFrame carries encoded or raw video bytes plus dimensional metadata.
 type VideoFrame struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Payload       []byte                 `protobuf:"bytes,1,opt,name=payload,proto3" json:"payload,omitempty"`
-	Codec         string                 `protobuf:"bytes,2,opt,name=codec,proto3" json:"codec,omitempty"` // e.g., h264, vp8, raw
-	Width         uint32                 `protobuf:"varint,3,opt,name=width,proto3" json:"width,omitempty"`
-	Height        uint32                 `protobuf:"varint,4,opt,name=height,proto3" json:"height,omitempty"`
-	TimestampMs   uint64                 `protobuf:"varint,5,opt,name=timestamp_ms,json=timestampMs,proto3" json:"timestamp_ms,omitempty"`
-	Raw           bool                   `protobuf:"varint,6,opt,name=raw,proto3" json:"raw,omitempty"` // true when payload contains raw pixels (YUV/RGB)
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// payload contains the encoded frame bytes or raw pixel bytes when raw is true.
+	Payload []byte `protobuf:"bytes,1,opt,name=payload,proto3" json:"payload,omitempty"`
+	// codec names the video encoding (for example, "h264", "vp8", or "raw").
+	Codec string `protobuf:"bytes,2,opt,name=codec,proto3" json:"codec,omitempty"` // e.g., h264, vp8, raw
+	// width is the frame width in pixels.
+	Width uint32 `protobuf:"varint,3,opt,name=width,proto3" json:"width,omitempty"`
+	// height is the frame height in pixels.
+	Height uint32 `protobuf:"varint,4,opt,name=height,proto3" json:"height,omitempty"`
+	// timestamp_ms records when the frame was captured or should be presented.
+	TimestampMs uint64 `protobuf:"varint,5,opt,name=timestamp_ms,json=timestampMs,proto3" json:"timestamp_ms,omitempty"`
+	// raw reports whether payload contains raw pixels rather than an encoded frame.
+	Raw           bool `protobuf:"varint,6,opt,name=raw,proto3" json:"raw,omitempty"` // true when payload contains raw pixels (YUV/RGB)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -322,11 +337,15 @@ func (x *VideoFrame) GetRaw() bool {
 	return false
 }
 
+// BinaryFrame carries an opaque binary payload with MIME metadata.
 type BinaryFrame struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Payload       []byte                 `protobuf:"bytes,1,opt,name=payload,proto3" json:"payload,omitempty"`
-	MimeType      string                 `protobuf:"bytes,2,opt,name=mime_type,json=mimeType,proto3" json:"mime_type,omitempty"` // e.g., application/json, application/octet-stream
-	TimestampMs   uint64                 `protobuf:"varint,3,opt,name=timestamp_ms,json=timestampMs,proto3" json:"timestamp_ms,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// payload contains the opaque frame bytes.
+	Payload []byte `protobuf:"bytes,1,opt,name=payload,proto3" json:"payload,omitempty"`
+	// mime_type describes the payload media type for downstream decoders.
+	MimeType string `protobuf:"bytes,2,opt,name=mime_type,json=mimeType,proto3" json:"mime_type,omitempty"` // e.g., application/json, application/octet-stream
+	// timestamp_ms records when the frame was produced or should be processed.
+	TimestampMs   uint64 `protobuf:"varint,3,opt,name=timestamp_ms,json=timestampMs,proto3" json:"timestamp_ms,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -382,12 +401,17 @@ func (x *BinaryFrame) GetTimestampMs() uint64 {
 	return 0
 }
 
+// TransportDescriptor describes a transport lane available to the current packet.
 type TransportDescriptor struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Kind          string                 `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
-	Mode          string                 `protobuf:"bytes,3,opt,name=mode,proto3" json:"mode,omitempty"`
-	Config        *structpb.Struct       `protobuf:"bytes,4,opt,name=config,proto3" json:"config,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// name is the logical transport identifier selected by the story/runtime.
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// kind identifies the transport implementation or class.
+	Kind string `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
+	// mode identifies how the transport is used (for example, hot vs cold path).
+	Mode string `protobuf:"bytes,3,opt,name=mode,proto3" json:"mode,omitempty"`
+	// config contains transport-specific configuration surfaced to consumers.
+	Config        *structpb.Struct `protobuf:"bytes,4,opt,name=config,proto3" json:"config,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -450,19 +474,27 @@ func (x *TransportDescriptor) GetConfig() *structpb.Struct {
 	return nil
 }
 
+// PublishRequest carries a packet plus structured context for pub/sub style publishers.
 type PublishRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// frame carries exactly one media payload for the published packet.
+	//
 	// Types that are valid to be assigned to Frame:
 	//
 	//	*PublishRequest_Audio
 	//	*PublishRequest_Video
 	//	*PublishRequest_Binary
-	Frame         isPublishRequest_Frame `protobuf_oneof:"frame"`
-	Metadata      map[string]string      `protobuf:"bytes,4,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	Payload       *structpb.Struct       `protobuf:"bytes,5,opt,name=payload,proto3" json:"payload,omitempty"`
-	Inputs        *structpb.Struct       `protobuf:"bytes,6,opt,name=inputs,proto3" json:"inputs,omitempty"`
-	Transports    []*TransportDescriptor `protobuf:"bytes,7,rep,name=transports,proto3" json:"transports,omitempty"`
-	Envelope      *StreamEnvelope        `protobuf:"bytes,8,opt,name=envelope,proto3" json:"envelope,omitempty"`
+	Frame isPublishRequest_Frame `protobuf_oneof:"frame"`
+	// metadata carries story, run, step, or provider-specific routing hints.
+	Metadata map[string]string `protobuf:"bytes,4,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// payload carries the structured JSON-like business payload.
+	Payload *structpb.Struct `protobuf:"bytes,5,opt,name=payload,proto3" json:"payload,omitempty"`
+	// inputs carries evaluated step inputs associated with the packet.
+	Inputs *structpb.Struct `protobuf:"bytes,6,opt,name=inputs,proto3" json:"inputs,omitempty"`
+	// transports enumerates transport descriptors relevant to the packet.
+	Transports []*TransportDescriptor `protobuf:"bytes,7,rep,name=transports,proto3" json:"transports,omitempty"`
+	// envelope carries ordering, partitioning, and chunking metadata for the packet.
+	Envelope      *StreamEnvelope `protobuf:"bytes,8,opt,name=envelope,proto3" json:"envelope,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -571,14 +603,17 @@ type isPublishRequest_Frame interface {
 }
 
 type PublishRequest_Audio struct {
+	// audio carries an audio payload for the published packet.
 	Audio *AudioFrame `protobuf:"bytes,1,opt,name=audio,proto3,oneof"`
 }
 
 type PublishRequest_Video struct {
+	// video carries a video payload for the published packet.
 	Video *VideoFrame `protobuf:"bytes,2,opt,name=video,proto3,oneof"`
 }
 
 type PublishRequest_Binary struct {
+	// binary carries an opaque binary payload for the published packet.
 	Binary *BinaryFrame `protobuf:"bytes,3,opt,name=binary,proto3,oneof"`
 }
 
@@ -588,12 +623,17 @@ func (*PublishRequest_Video) isPublishRequest_Frame() {}
 
 func (*PublishRequest_Binary) isPublishRequest_Frame() {}
 
+// ControlRequest is sent by the SDK/engram side to the connector control stream.
 type ControlRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Action        ControlAction          `protobuf:"varint,1,opt,name=action,proto3,enum=transport.v1.ControlAction" json:"action,omitempty"`
-	Metadata      map[string]string      `protobuf:"bytes,2,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	Flow          *FlowControl           `protobuf:"bytes,3,opt,name=flow,proto3" json:"flow,omitempty"`
-	CustomAction  string                 `protobuf:"bytes,4,opt,name=custom_action,json=customAction,proto3" json:"custom_action,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// action carries the canonical action when the sender uses a standard verb.
+	Action ControlAction `protobuf:"varint,1,opt,name=action,proto3,enum=transport.v1.ControlAction" json:"action,omitempty"`
+	// metadata carries transport, session, or capability context for the action.
+	Metadata map[string]string `protobuf:"bytes,2,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// flow carries acknowledgement or backpressure updates piggybacked on the control stream.
+	Flow *FlowControl `protobuf:"bytes,3,opt,name=flow,proto3" json:"flow,omitempty"`
+	// custom_action preserves non-standard verbs without reopening the standard enum.
+	CustomAction  string `protobuf:"bytes,4,opt,name=custom_action,json=customAction,proto3" json:"custom_action,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -656,12 +696,17 @@ func (x *ControlRequest) GetCustomAction() string {
 	return ""
 }
 
+// ControlResponse is sent by the connector to report readiness, capabilities, or acknowledgements.
 type ControlResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Action        ControlAction          `protobuf:"varint,1,opt,name=action,proto3,enum=transport.v1.ControlAction" json:"action,omitempty"`
-	Metadata      map[string]string      `protobuf:"bytes,2,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	Flow          *FlowControl           `protobuf:"bytes,3,opt,name=flow,proto3" json:"flow,omitempty"`
-	CustomAction  string                 `protobuf:"bytes,4,opt,name=custom_action,json=customAction,proto3" json:"custom_action,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// action carries the canonical action when the sender uses a standard verb.
+	Action ControlAction `protobuf:"varint,1,opt,name=action,proto3,enum=transport.v1.ControlAction" json:"action,omitempty"`
+	// metadata carries transport, session, or capability context for the action.
+	Metadata map[string]string `protobuf:"bytes,2,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// flow carries acknowledgement or backpressure updates piggybacked on the control stream.
+	Flow *FlowControl `protobuf:"bytes,3,opt,name=flow,proto3" json:"flow,omitempty"`
+	// custom_action preserves non-standard verbs without reopening the standard enum.
+	CustomAction  string `protobuf:"bytes,4,opt,name=custom_action,json=customAction,proto3" json:"custom_action,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -724,10 +769,13 @@ func (x *ControlResponse) GetCustomAction() string {
 	return ""
 }
 
+// PartitionAck checkpoints ordered delivery progress for a specific partition.
 type PartitionAck struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Partition     string                 `protobuf:"bytes,1,opt,name=partition,proto3" json:"partition,omitempty"`
-	Ack           uint64                 `protobuf:"varint,2,opt,name=ack,proto3" json:"ack,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// partition identifies the ordered stream partition being acknowledged.
+	Partition string `protobuf:"bytes,1,opt,name=partition,proto3" json:"partition,omitempty"`
+	// ack is the highest sequence number observed for the partition.
+	Ack           uint64 `protobuf:"varint,2,opt,name=ack,proto3" json:"ack,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -776,15 +824,21 @@ func (x *PartitionAck) GetAck() uint64 {
 	return 0
 }
 
+// FlowControl carries acknowledgements, credits, and explicit backpressure signals.
 type FlowControl struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	Ack             uint64                 `protobuf:"varint,1,opt,name=ack,proto3" json:"ack,omitempty"`
-	CreditsMessages uint32                 `protobuf:"varint,2,opt,name=credits_messages,json=creditsMessages,proto3" json:"credits_messages,omitempty"`
-	CreditsBytes    uint32                 `protobuf:"varint,3,opt,name=credits_bytes,json=creditsBytes,proto3" json:"credits_bytes,omitempty"`
-	PartitionAcks   []*PartitionAck        `protobuf:"bytes,6,rep,name=partition_acks,json=partitionAcks,proto3" json:"partition_acks,omitempty"`
-	Signal          FlowControlSignal      `protobuf:"varint,7,opt,name=signal,proto3,enum=transport.v1.FlowControlSignal" json:"signal,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// ack acknowledges the highest delivered sequence for non-partitioned streams.
+	Ack uint64 `protobuf:"varint,1,opt,name=ack,proto3" json:"ack,omitempty"`
+	// credits_messages grants additional message-level credit to the sender.
+	CreditsMessages uint32 `protobuf:"varint,2,opt,name=credits_messages,json=creditsMessages,proto3" json:"credits_messages,omitempty"`
+	// credits_bytes grants additional byte-level credit to the sender.
+	CreditsBytes uint32 `protobuf:"varint,3,opt,name=credits_bytes,json=creditsBytes,proto3" json:"credits_bytes,omitempty"`
+	// partition_acks acknowledges ordered delivery progress per partition.
+	PartitionAcks []*PartitionAck `protobuf:"bytes,6,rep,name=partition_acks,json=partitionAcks,proto3" json:"partition_acks,omitempty"`
+	// signal requests a pause or resume transition for the upstream sender.
+	Signal        FlowControlSignal `protobuf:"varint,7,opt,name=signal,proto3,enum=transport.v1.FlowControlSignal" json:"signal,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *FlowControl) Reset() {
@@ -852,19 +906,28 @@ func (x *FlowControl) GetSignal() FlowControlSignal {
 	return FlowControlSignal_FLOW_CONTROL_SIGNAL_UNSPECIFIED
 }
 
+// StreamEnvelope carries ordering, partitioning, and chunking metadata for streamed packets.
 type StreamEnvelope struct {
-	state     protoimpl.MessageState `protogen:"open.v1"`
-	StreamId  string                 `protobuf:"bytes,1,opt,name=stream_id,json=streamId,proto3" json:"stream_id,omitempty"`
-	Sequence  uint64                 `protobuf:"varint,2,opt,name=sequence,proto3" json:"sequence,omitempty"`
-	Partition string                 `protobuf:"bytes,3,opt,name=partition,proto3" json:"partition,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// stream_id identifies the logical stream within a connector or hub session.
+	StreamId string `protobuf:"bytes,1,opt,name=stream_id,json=streamId,proto3" json:"stream_id,omitempty"`
+	// sequence is the monotonically increasing sequence number for the stream.
+	Sequence uint64 `protobuf:"varint,2,opt,name=sequence,proto3" json:"sequence,omitempty"`
+	// partition identifies an ordered sub-stream when partitioned delivery is in use.
+	Partition string `protobuf:"bytes,3,opt,name=partition,proto3" json:"partition,omitempty"`
 	// Chunking metadata (binary frames only).
 	// When chunk_id is set, the BinaryFrame payload is one chunk of a larger message.
 	// chunk_index is zero-based; chunk_count is the total number of chunks.
 	// chunk_bytes and total_bytes are optional size hints for validation/preallocation.
-	ChunkId       string `protobuf:"bytes,4,opt,name=chunk_id,json=chunkId,proto3" json:"chunk_id,omitempty"`
-	ChunkIndex    uint32 `protobuf:"varint,5,opt,name=chunk_index,json=chunkIndex,proto3" json:"chunk_index,omitempty"`
-	ChunkCount    uint32 `protobuf:"varint,6,opt,name=chunk_count,json=chunkCount,proto3" json:"chunk_count,omitempty"`
-	ChunkBytes    uint32 `protobuf:"varint,7,opt,name=chunk_bytes,json=chunkBytes,proto3" json:"chunk_bytes,omitempty"`
+	// chunk_id groups multiple BinaryFrame chunks into one logical payload.
+	ChunkId string `protobuf:"bytes,4,opt,name=chunk_id,json=chunkId,proto3" json:"chunk_id,omitempty"`
+	// chunk_index is the zero-based position of this chunk within the logical payload.
+	ChunkIndex uint32 `protobuf:"varint,5,opt,name=chunk_index,json=chunkIndex,proto3" json:"chunk_index,omitempty"`
+	// chunk_count is the total number of chunks in the logical payload.
+	ChunkCount uint32 `protobuf:"varint,6,opt,name=chunk_count,json=chunkCount,proto3" json:"chunk_count,omitempty"`
+	// chunk_bytes is the size of this chunk in bytes when known.
+	ChunkBytes uint32 `protobuf:"varint,7,opt,name=chunk_bytes,json=chunkBytes,proto3" json:"chunk_bytes,omitempty"`
+	// total_bytes is the full logical payload size in bytes when known.
 	TotalBytes    uint32 `protobuf:"varint,8,opt,name=total_bytes,json=totalBytes,proto3" json:"total_bytes,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -956,16 +1019,25 @@ func (x *StreamEnvelope) GetTotalBytes() uint32 {
 	return 0
 }
 
+// BindingInfo describes how a connector is bound to a transport endpoint and codec set.
 type BindingInfo struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	TransportRef    string                 `protobuf:"bytes,1,opt,name=transport_ref,json=transportRef,proto3" json:"transport_ref,omitempty"`
-	Driver          string                 `protobuf:"bytes,2,opt,name=driver,proto3" json:"driver,omitempty"`
-	Endpoint        string                 `protobuf:"bytes,3,opt,name=endpoint,proto3" json:"endpoint,omitempty"` // connector endpoint (unix:///tmp/.. or tcp)
-	AudioCodecs     []string               `protobuf:"bytes,4,rep,name=audio_codecs,json=audioCodecs,proto3" json:"audio_codecs,omitempty"`
-	VideoCodecs     []string               `protobuf:"bytes,5,rep,name=video_codecs,json=videoCodecs,proto3" json:"video_codecs,omitempty"`
-	Payload         []byte                 `protobuf:"bytes,6,opt,name=payload,proto3" json:"payload,omitempty"`                                        // provider-specific JSON/YAML
-	BinaryTypes     []string               `protobuf:"bytes,7,rep,name=binary_types,json=binaryTypes,proto3" json:"binary_types,omitempty"`             // MIME types accepted for BinaryFrame
-	ProtocolVersion string                 `protobuf:"bytes,8,opt,name=protocol_version,json=protocolVersion,proto3" json:"protocol_version,omitempty"` // transport contract version (e.g., "1.0.0")
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// transport_ref is the logical transport reference selected by the runtime.
+	TransportRef string `protobuf:"bytes,1,opt,name=transport_ref,json=transportRef,proto3" json:"transport_ref,omitempty"`
+	// driver identifies the concrete connector driver implementation.
+	Driver string `protobuf:"bytes,2,opt,name=driver,proto3" json:"driver,omitempty"`
+	// endpoint is the connector address (for example, unix or TCP).
+	Endpoint string `protobuf:"bytes,3,opt,name=endpoint,proto3" json:"endpoint,omitempty"` // connector endpoint (unix:///tmp/.. or tcp)
+	// audio_codecs lists audio encodings accepted by the connector.
+	AudioCodecs []string `protobuf:"bytes,4,rep,name=audio_codecs,json=audioCodecs,proto3" json:"audio_codecs,omitempty"`
+	// video_codecs lists video encodings accepted by the connector.
+	VideoCodecs []string `protobuf:"bytes,5,rep,name=video_codecs,json=videoCodecs,proto3" json:"video_codecs,omitempty"`
+	// payload carries provider-specific configuration or binding metadata bytes.
+	Payload []byte `protobuf:"bytes,6,opt,name=payload,proto3" json:"payload,omitempty"` // provider-specific JSON/YAML
+	// binary_types lists MIME types accepted for BinaryFrame payloads.
+	BinaryTypes []string `protobuf:"bytes,7,rep,name=binary_types,json=binaryTypes,proto3" json:"binary_types,omitempty"` // MIME types accepted for BinaryFrame
+	// protocol_version reports the transport contract version expected by the connector.
+	ProtocolVersion string `protobuf:"bytes,8,opt,name=protocol_version,json=protocolVersion,proto3" json:"protocol_version,omitempty"` // transport contract version (e.g., "1.0.0")
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -1056,19 +1128,27 @@ func (x *BindingInfo) GetProtocolVersion() string {
 	return ""
 }
 
+// DataRequest carries packet data from the SDK/engram side to the connector.
 type DataRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// frame carries exactly one media payload for the current packet.
+	//
 	// Types that are valid to be assigned to Frame:
 	//
 	//	*DataRequest_Audio
 	//	*DataRequest_Video
 	//	*DataRequest_Binary
-	Frame         isDataRequest_Frame    `protobuf_oneof:"frame"`
-	Metadata      map[string]string      `protobuf:"bytes,4,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	Payload       *structpb.Struct       `protobuf:"bytes,5,opt,name=payload,proto3" json:"payload,omitempty"`
-	Inputs        *structpb.Struct       `protobuf:"bytes,6,opt,name=inputs,proto3" json:"inputs,omitempty"`
-	Transports    []*TransportDescriptor `protobuf:"bytes,7,rep,name=transports,proto3" json:"transports,omitempty"`
-	Envelope      *StreamEnvelope        `protobuf:"bytes,8,opt,name=envelope,proto3" json:"envelope,omitempty"`
+	Frame isDataRequest_Frame `protobuf_oneof:"frame"`
+	// metadata carries story, run, step, or provider-specific routing hints.
+	Metadata map[string]string `protobuf:"bytes,4,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// payload carries the structured JSON-like business payload.
+	Payload *structpb.Struct `protobuf:"bytes,5,opt,name=payload,proto3" json:"payload,omitempty"`
+	// inputs carries evaluated step inputs associated with the packet.
+	Inputs *structpb.Struct `protobuf:"bytes,6,opt,name=inputs,proto3" json:"inputs,omitempty"`
+	// transports enumerates transport descriptors relevant to the packet.
+	Transports []*TransportDescriptor `protobuf:"bytes,7,rep,name=transports,proto3" json:"transports,omitempty"`
+	// envelope carries ordering, partitioning, and chunking metadata for the packet.
+	Envelope      *StreamEnvelope `protobuf:"bytes,8,opt,name=envelope,proto3" json:"envelope,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1177,14 +1257,17 @@ type isDataRequest_Frame interface {
 }
 
 type DataRequest_Audio struct {
+	// audio carries an audio payload for the packet.
 	Audio *AudioFrame `protobuf:"bytes,1,opt,name=audio,proto3,oneof"`
 }
 
 type DataRequest_Video struct {
+	// video carries a video payload for the packet.
 	Video *VideoFrame `protobuf:"bytes,2,opt,name=video,proto3,oneof"`
 }
 
 type DataRequest_Binary struct {
+	// binary carries an opaque binary payload for the packet.
 	Binary *BinaryFrame `protobuf:"bytes,3,opt,name=binary,proto3,oneof"`
 }
 
@@ -1194,19 +1277,27 @@ func (*DataRequest_Video) isDataRequest_Frame() {}
 
 func (*DataRequest_Binary) isDataRequest_Frame() {}
 
+// DataResponse carries packet data from the connector back to the SDK/engram side.
 type DataResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// frame carries exactly one media payload for the current packet.
+	//
 	// Types that are valid to be assigned to Frame:
 	//
 	//	*DataResponse_Audio
 	//	*DataResponse_Video
 	//	*DataResponse_Binary
-	Frame         isDataResponse_Frame   `protobuf_oneof:"frame"`
-	Metadata      map[string]string      `protobuf:"bytes,4,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	Payload       *structpb.Struct       `protobuf:"bytes,5,opt,name=payload,proto3" json:"payload,omitempty"`
-	Inputs        *structpb.Struct       `protobuf:"bytes,6,opt,name=inputs,proto3" json:"inputs,omitempty"`
-	Transports    []*TransportDescriptor `protobuf:"bytes,7,rep,name=transports,proto3" json:"transports,omitempty"`
-	Envelope      *StreamEnvelope        `protobuf:"bytes,8,opt,name=envelope,proto3" json:"envelope,omitempty"`
+	Frame isDataResponse_Frame `protobuf_oneof:"frame"`
+	// metadata carries story, run, step, or provider-specific routing hints.
+	Metadata map[string]string `protobuf:"bytes,4,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// payload carries the structured JSON-like business payload.
+	Payload *structpb.Struct `protobuf:"bytes,5,opt,name=payload,proto3" json:"payload,omitempty"`
+	// inputs carries evaluated step inputs associated with the packet.
+	Inputs *structpb.Struct `protobuf:"bytes,6,opt,name=inputs,proto3" json:"inputs,omitempty"`
+	// transports enumerates transport descriptors relevant to the packet.
+	Transports []*TransportDescriptor `protobuf:"bytes,7,rep,name=transports,proto3" json:"transports,omitempty"`
+	// envelope carries ordering, partitioning, and chunking metadata for the packet.
+	Envelope      *StreamEnvelope `protobuf:"bytes,8,opt,name=envelope,proto3" json:"envelope,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1315,14 +1406,17 @@ type isDataResponse_Frame interface {
 }
 
 type DataResponse_Audio struct {
+	// audio carries an audio payload for the packet.
 	Audio *AudioFrame `protobuf:"bytes,1,opt,name=audio,proto3,oneof"`
 }
 
 type DataResponse_Video struct {
+	// video carries a video payload for the packet.
 	Video *VideoFrame `protobuf:"bytes,2,opt,name=video,proto3,oneof"`
 }
 
 type DataResponse_Binary struct {
+	// binary carries an opaque binary payload for the packet.
 	Binary *BinaryFrame `protobuf:"bytes,3,opt,name=binary,proto3,oneof"`
 }
 
@@ -1332,20 +1426,27 @@ func (*DataResponse_Video) isDataResponse_Frame() {}
 
 func (*DataResponse_Binary) isDataResponse_Frame() {}
 
-// HubPushRequest is sent by the hub to push DataPackets to passive connectors
+// HubPushRequest is sent by the hub to push DataPackets to passive connectors.
 type HubPushRequest struct {
-	state    protoimpl.MessageState `protogen:"open.v1"`
-	Metadata map[string]string      `protobuf:"bytes,1,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // Story/run/step identifiers
-	Payload  *structpb.Struct       `protobuf:"bytes,2,opt,name=payload,proto3" json:"payload,omitempty"`
-	Inputs   *structpb.Struct       `protobuf:"bytes,3,opt,name=inputs,proto3" json:"inputs,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// metadata carries story, run, step, or provider-specific routing hints.
+	Metadata map[string]string `protobuf:"bytes,1,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// payload carries the structured JSON-like business payload.
+	Payload *structpb.Struct `protobuf:"bytes,2,opt,name=payload,proto3" json:"payload,omitempty"`
+	// inputs carries evaluated step inputs associated with the packet.
+	Inputs *structpb.Struct `protobuf:"bytes,3,opt,name=inputs,proto3" json:"inputs,omitempty"`
+	// frame carries exactly one media payload alongside the structured packet context.
+	//
 	// Types that are valid to be assigned to Frame:
 	//
 	//	*HubPushRequest_Audio
 	//	*HubPushRequest_Video
 	//	*HubPushRequest_Binary
-	Frame         isHubPushRequest_Frame `protobuf_oneof:"frame"`
-	Transports    []*TransportDescriptor `protobuf:"bytes,7,rep,name=transports,proto3" json:"transports,omitempty"`
-	Envelope      *StreamEnvelope        `protobuf:"bytes,8,opt,name=envelope,proto3" json:"envelope,omitempty"`
+	Frame isHubPushRequest_Frame `protobuf_oneof:"frame"`
+	// transports enumerates transport descriptors relevant to the packet.
+	Transports []*TransportDescriptor `protobuf:"bytes,7,rep,name=transports,proto3" json:"transports,omitempty"`
+	// envelope carries ordering, partitioning, and chunking metadata for the packet.
+	Envelope      *StreamEnvelope `protobuf:"bytes,8,opt,name=envelope,proto3" json:"envelope,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1454,14 +1555,17 @@ type isHubPushRequest_Frame interface {
 }
 
 type HubPushRequest_Audio struct {
+	// audio carries an audio payload for the packet.
 	Audio *AudioFrame `protobuf:"bytes,4,opt,name=audio,proto3,oneof"`
 }
 
 type HubPushRequest_Video struct {
+	// video carries a video payload for the packet.
 	Video *VideoFrame `protobuf:"bytes,5,opt,name=video,proto3,oneof"`
 }
 
 type HubPushRequest_Binary struct {
+	// binary carries an opaque binary payload for the packet.
 	Binary *BinaryFrame `protobuf:"bytes,6,opt,name=binary,proto3,oneof"`
 }
 
@@ -1471,20 +1575,27 @@ func (*HubPushRequest_Video) isHubPushRequest_Frame() {}
 
 func (*HubPushRequest_Binary) isHubPushRequest_Frame() {}
 
-// HubPushResponse is sent by the connector back to the hub with engram's response
+// HubPushResponse is sent by the connector back to the hub with the engram response.
 type HubPushResponse struct {
-	state      protoimpl.MessageState `protogen:"open.v1"`
-	Metadata   map[string]string      `protobuf:"bytes,1,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	Payload    *structpb.Struct       `protobuf:"bytes,2,opt,name=payload,proto3" json:"payload,omitempty"`
-	Inputs     *structpb.Struct       `protobuf:"bytes,3,opt,name=inputs,proto3" json:"inputs,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// metadata carries story, run, step, or provider-specific routing hints.
+	Metadata map[string]string `protobuf:"bytes,1,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	// payload carries the structured JSON-like business payload.
+	Payload *structpb.Struct `protobuf:"bytes,2,opt,name=payload,proto3" json:"payload,omitempty"`
+	// inputs carries evaluated step inputs associated with the packet.
+	Inputs *structpb.Struct `protobuf:"bytes,3,opt,name=inputs,proto3" json:"inputs,omitempty"`
+	// transports enumerates transport descriptors relevant to the packet.
 	Transports []*TransportDescriptor `protobuf:"bytes,4,rep,name=transports,proto3" json:"transports,omitempty"`
+	// frame carries exactly one media payload alongside the structured packet context.
+	//
 	// Types that are valid to be assigned to Frame:
 	//
 	//	*HubPushResponse_Audio
 	//	*HubPushResponse_Video
 	//	*HubPushResponse_Binary
-	Frame         isHubPushResponse_Frame `protobuf_oneof:"frame"`
-	Envelope      *StreamEnvelope         `protobuf:"bytes,8,opt,name=envelope,proto3" json:"envelope,omitempty"`
+	Frame isHubPushResponse_Frame `protobuf_oneof:"frame"`
+	// envelope carries ordering, partitioning, and chunking metadata for the packet.
+	Envelope      *StreamEnvelope `protobuf:"bytes,8,opt,name=envelope,proto3" json:"envelope,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1593,14 +1704,17 @@ type isHubPushResponse_Frame interface {
 }
 
 type HubPushResponse_Audio struct {
+	// audio carries an audio payload for the packet.
 	Audio *AudioFrame `protobuf:"bytes,5,opt,name=audio,proto3,oneof"`
 }
 
 type HubPushResponse_Video struct {
+	// video carries a video payload for the packet.
 	Video *VideoFrame `protobuf:"bytes,6,opt,name=video,proto3,oneof"`
 }
 
 type HubPushResponse_Binary struct {
+	// binary carries an opaque binary payload for the packet.
 	Binary *BinaryFrame `protobuf:"bytes,7,opt,name=binary,proto3,oneof"`
 }
 

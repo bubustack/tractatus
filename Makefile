@@ -1,7 +1,8 @@
 SHELL := /usr/bin/env bash -o pipefail
 .SHELLFLAGS := -ec
 
-BUF_BREAKING_TARGET ?= .git#branch=main
+BUF_BREAKING_BRANCH ?= buf-breaking-base
+BUF_BREAKING_TARGET ?= .git#branch=$(BUF_BREAKING_BRANCH)
 LOCALBIN ?= $(shell pwd)/bin
 GOBIN ?= $(LOCALBIN)
 GOLANGCI_LINT = $(LOCALBIN)/golangci-lint
@@ -29,7 +30,7 @@ lint-config: golangci-lint ## Verify golangci-lint configuration
 
 .PHONY: test
 test: ## Run Go unit tests
-	go test ./...
+	go test $$(go list ./... | grep -v '^github.com/bubustack/tractatus/dist/')
 
 .PHONY: tidy
 tidy: ## Tidy go.mod / go.sum
@@ -50,7 +51,7 @@ buf-lint: ## Run buf lint on proto definitions
 .PHONY: buf-breaking
 buf-breaking: ## Ensure schema changes remain backwards compatible
 	@command -v buf >/dev/null 2>&1 || { echo "Error: buf CLI is not installed. See https://buf.build/docs/installation"; exit 1; }
-	@git rev-parse --verify refs/heads/main >/dev/null 2>&1 || { echo "Error: local main baseline is unavailable. Run 'git fetch origin main:main' after the first push to main."; exit 1; }
+	@git rev-parse --verify refs/heads/$(BUF_BREAKING_BRANCH) >/dev/null 2>&1 || { echo "Error: local breaking baseline is unavailable. Run 'git fetch -f origin main:$(BUF_BREAKING_BRANCH)' after the first push to main."; exit 1; }
 	buf breaking --against "$(BUF_BREAKING_TARGET)"
 
 .PHONY: proto-dist

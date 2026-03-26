@@ -27,13 +27,15 @@ const (
 // TransportConnectorServiceClient is the client API for TransportConnectorService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// TransportConnectorService is the connector-side transport contract used by engrams and sidecars.
 type TransportConnectorServiceClient interface {
-	// Data is the bidirectional stream between the local engram and the connector
+	// Data is the bidirectional stream between the local engram and the connector.
 	Data(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[DataRequest, DataResponse], error)
-	// Control is the control channel for lifecycle management and capability negotiation
+	// Control is the control channel for lifecycle management and capability negotiation.
 	Control(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[ControlRequest, ControlResponse], error)
-	// HubPush is a hub-initiated bidirectional stream for pushing packets to passive engrams
-	// The hub connects to the connector and pushes packets, which the connector forwards to the local engram
+	// HubPush is a hub-initiated bidirectional stream for pushing packets to passive engrams.
+	// The hub connects to the connector and pushes packets, which the connector forwards to the local engram.
 	HubPush(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[HubPushRequest, HubPushResponse], error)
 }
 
@@ -87,13 +89,15 @@ type TransportConnectorService_HubPushClient = grpc.BidiStreamingClient[HubPushR
 // TransportConnectorServiceServer is the server API for TransportConnectorService service.
 // All implementations must embed UnimplementedTransportConnectorServiceServer
 // for forward compatibility.
+//
+// TransportConnectorService is the connector-side transport contract used by engrams and sidecars.
 type TransportConnectorServiceServer interface {
-	// Data is the bidirectional stream between the local engram and the connector
+	// Data is the bidirectional stream between the local engram and the connector.
 	Data(grpc.BidiStreamingServer[DataRequest, DataResponse]) error
-	// Control is the control channel for lifecycle management and capability negotiation
+	// Control is the control channel for lifecycle management and capability negotiation.
 	Control(grpc.BidiStreamingServer[ControlRequest, ControlResponse]) error
-	// HubPush is a hub-initiated bidirectional stream for pushing packets to passive engrams
-	// The hub connects to the connector and pushes packets, which the connector forwards to the local engram
+	// HubPush is a hub-initiated bidirectional stream for pushing packets to passive engrams.
+	// The hub connects to the connector and pushes packets, which the connector forwards to the local engram.
 	HubPush(grpc.BidiStreamingServer[HubPushRequest, HubPushResponse]) error
 	mustEmbedUnimplementedTransportConnectorServiceServer()
 }

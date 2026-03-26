@@ -25,6 +25,8 @@ const (
 // HubServiceClient is the client API for HubService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// HubService routes bidirectional packet streams between runtime participants.
 type HubServiceClient interface {
 	// Process is a bidirectional stream that routes DataPackets between engrams.
 	Process(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[ProcessRequest, ProcessResponse], error)
@@ -54,6 +56,8 @@ type HubService_ProcessClient = grpc.BidiStreamingClient[ProcessRequest, Process
 // HubServiceServer is the server API for HubService service.
 // All implementations must embed UnimplementedHubServiceServer
 // for forward compatibility.
+//
+// HubService routes bidirectional packet streams between runtime participants.
 type HubServiceServer interface {
 	// Process is a bidirectional stream that routes DataPackets between engrams.
 	Process(grpc.BidiStreamingServer[ProcessRequest, ProcessResponse]) error
