@@ -1,0 +1,25 @@
+version: v2
+plugins:
+  # Go bindings for consumers that vendor the module directly.
+  - remote: buf.build/protocolbuffers/go:v1.36.11
+    out: dist/release/go
+    opt:
+      - paths=source_relative
+  - remote: buf.build/grpc/go:v1.6.1
+    out: dist/release/go
+    opt:
+      - paths=source_relative
+
+  # TypeScript/NodeJS SDKs (ts-proto with gRPC JS clients).
+  - remote: buf.build/community/stephenh-ts-proto:v2.11.4
+    out: dist/release/ts
+    opt:
+      - esModuleInterop=true
+      - outputServices=grpc-js
+      - useOptionals=messages
+
+  # Python SDKs (protobuf + gRPC stubs).
+  - remote: buf.build/protocolbuffers/python:v34.1
+    out: dist/release/python
+  - remote: buf.build/grpc/python:v1.69.0
+    out: dist/release/python

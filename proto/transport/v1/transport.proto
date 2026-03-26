@@ -1,0 +1,306 @@
+syntax = "proto3";
+
+package transport.v1;
+
+option go_package = "github.com/bubustack/tractatus/gen/go/proto/transport/v1;transportv1";
+
+import "google/protobuf/struct.proto";
+
+// ControlAction enumerates the standard connector control-plane actions.
+enum ControlAction {
+  CONTROL_ACTION_UNSPECIFIED = 0;
+  CONTROL_ACTION_NOOP = 1;
+  CONTROL_ACTION_START = 2;
+  CONTROL_ACTION_STOP = 3;
+  CONTROL_ACTION_START_UPSTREAM = 4;
+  CONTROL_ACTION_STOP_UPSTREAM = 5;
+  CONTROL_ACTION_START_DOWNSTREAM = 6;
+  CONTROL_ACTION_STOP_DOWNSTREAM = 7;
+  CONTROL_ACTION_HEARTBEAT = 8;
+  CONTROL_ACTION_CONNECTOR_READY = 9;
+  CONTROL_ACTION_CONNECTOR_CAPABILITIES = 10;
+  CONTROL_ACTION_HANDOFF_DRAINING = 11;
+  CONTROL_ACTION_HANDOFF_CUTOVER = 12;
+  CONTROL_ACTION_HANDOFF_READY = 13;
+  CONTROL_ACTION_ACK = 14;
+  CONTROL_ACTION_ERROR = 15;
+  CONTROL_ACTION_CODEC_SELECT = 16;
+}
+
+// FlowControlSignal models upstream backpressure transitions without ambiguous booleans.
+enum FlowControlSignal {
+  FLOW_CONTROL_SIGNAL_UNSPECIFIED = 0;
+  FLOW_CONTROL_SIGNAL_PAUSE = 1;
+  FLOW_CONTROL_SIGNAL_RESUME = 2;
+}
+
+// AudioFrame carries raw or passthrough audio bytes plus basic timing metadata.
+message AudioFrame {
+  // pcm contains the audio payload bytes for this frame.
+  bytes pcm = 1;
+  // sample_rate_hz is the sampling frequency associated with the payload.
+  int32 sample_rate_hz = 2;
+  // channels is the number of interleaved audio channels encoded in pcm.
+  int32 channels = 3;
+  // codec names the audio encoding (for example, "pcm16" or "opus").
+  string codec = 4; // e.g., "pcm16", "opus" when passthrough
+  // timestamp_ms records when the frame was captured or should be presented.
+  uint64 timestamp_ms = 5;
+}
+
+// VideoFrame carries encoded or raw video bytes plus dimensional metadata.
+message VideoFrame {
+  // payload contains the encoded frame bytes or raw pixel bytes when raw is true.
+  bytes payload = 1;
+  // codec names the video encoding (for example, "h264", "vp8", or "raw").
+  string codec = 2; // e.g., h264, vp8, raw
+  // width is the frame width in pixels.
+  uint32 width = 3;
+  // height is the frame height in pixels.
+  uint32 height = 4;
+  // timestamp_ms records when the frame was captured or should be presented.
+  uint64 timestamp_ms = 5;
+  // raw reports whether payload contains raw pixels rather than an encoded frame.
+  bool raw = 6; // true when payload contains raw pixels (YUV/RGB)
+}
+
+// BinaryFrame carries an opaque binary payload with MIME metadata.
+message BinaryFrame {
+  // payload contains the opaque frame bytes.
+  bytes payload = 1;
+  // mime_type describes the payload media type for downstream decoders.
+  string mime_type = 2; // e.g., application/json, application/octet-stream
+  // timestamp_ms records when the frame was produced or should be processed.
+  uint64 timestamp_ms = 3;
+}
+
+// TransportDescriptor describes a transport lane available to the current packet.
+message TransportDescriptor {
+  // name is the logical transport identifier selected by the story/runtime.
+  string name = 1;
+  // kind identifies the transport implementation or class.
+  string kind = 2;
+  // mode identifies how the transport is used (for example, hot vs cold path).
+  string mode = 3;
+  // config contains transport-specific configuration surfaced to consumers.
+  google.protobuf.Struct config = 4;
+}
+
+// PublishRequest carries a packet plus structured context for pub/sub style publishers.
+message PublishRequest {
+  // frame carries exactly one media payload for the published packet.
+  oneof frame {
+    // audio carries an audio payload for the published packet.
+    AudioFrame audio = 1;
+    // video carries a video payload for the published packet.
+    VideoFrame video = 2;
+    // binary carries an opaque binary payload for the published packet.
+    BinaryFrame binary = 3;
+  }
+  // metadata carries story, run, step, or provider-specific routing hints.
+  map<string, string> metadata = 4;
+  // payload carries the structured JSON-like business payload.
+  google.protobuf.Struct payload = 5;
+  // inputs carries evaluated step inputs associated with the packet.
+  google.protobuf.Struct inputs = 6;
+  // transports enumerates transport descriptors relevant to the packet.
+  repeated TransportDescriptor transports = 7;
+  // envelope carries ordering, partitioning, and chunking metadata for the packet.
+  StreamEnvelope envelope = 8;
+}
+
+// ControlRequest is sent by the SDK/engram side to the connector control stream.
+message ControlRequest {
+  // action carries the canonical action when the sender uses a standard verb.
+  ControlAction action = 1;
+  // metadata carries transport, session, or capability context for the action.
+  map<string, string> metadata = 2;
+  // flow carries acknowledgement or backpressure updates piggybacked on the control stream.
+  FlowControl flow = 3;
+  // custom_action preserves non-standard verbs without reopening the standard enum.
+  string custom_action = 4;
+}
+
+// ControlResponse is sent by the connector to report readiness, capabilities, or acknowledgements.
+message ControlResponse {
+  // action carries the canonical action when the sender uses a standard verb.
+  ControlAction action = 1;
+  // metadata carries transport, session, or capability context for the action.
+  map<string, string> metadata = 2;
+  // flow carries acknowledgement or backpressure updates piggybacked on the control stream.
+  FlowControl flow = 3;
+  // custom_action preserves non-standard verbs without reopening the standard enum.
+  string custom_action = 4;
+}
+
+// PartitionAck checkpoints ordered delivery progress for a specific partition.
+message PartitionAck {
+  // partition identifies the ordered stream partition being acknowledged.
+  string partition = 1;
+  // ack is the highest sequence number observed for the partition.
+  uint64 ack = 2;
+}
+
+// FlowControl carries acknowledgements, credits, and explicit backpressure signals.
+message FlowControl {
+  // ack acknowledges the highest delivered sequence for non-partitioned streams.
+  uint64 ack = 1;
+  // credits_messages grants additional message-level credit to the sender.
+  uint32 credits_messages = 2;
+  // credits_bytes grants additional byte-level credit to the sender.
+  uint32 credits_bytes = 3;
+  // partition_acks acknowledges ordered delivery progress per partition.
+  repeated PartitionAck partition_acks = 6;
+  reserved 4, 5;
+  // signal requests a pause or resume transition for the upstream sender.
+  FlowControlSignal signal = 7;
+}
+
+// StreamEnvelope carries ordering, partitioning, and chunking metadata for streamed packets.
+message StreamEnvelope {
+  // stream_id identifies the logical stream within a connector or hub session.
+  string stream_id = 1;
+  // sequence is the monotonically increasing sequence number for the stream.
+  uint64 sequence = 2;
+  // partition identifies an ordered sub-stream when partitioned delivery is in use.
+  string partition = 3;
+  // Chunking metadata (binary frames only).
+  // When chunk_id is set, the BinaryFrame payload is one chunk of a larger message.
+  // chunk_index is zero-based; chunk_count is the total number of chunks.
+  // chunk_bytes and total_bytes are optional size hints for validation/preallocation.
+  // chunk_id groups multiple BinaryFrame chunks into one logical payload.
+  string chunk_id = 4;
+  // chunk_index is the zero-based position of this chunk within the logical payload.
+  uint32 chunk_index = 5;
+  // chunk_count is the total number of chunks in the logical payload.
+  uint32 chunk_count = 6;
+  // chunk_bytes is the size of this chunk in bytes when known.
+  uint32 chunk_bytes = 7;
+  // total_bytes is the full logical payload size in bytes when known.
+  uint32 total_bytes = 8;
+}
+
+// BindingInfo describes how a connector is bound to a transport endpoint and codec set.
+message BindingInfo {
+  // transport_ref is the logical transport reference selected by the runtime.
+  string transport_ref = 1;
+  // driver identifies the concrete connector driver implementation.
+  string driver = 2;
+  // endpoint is the connector address (for example, unix or TCP).
+  string endpoint = 3; // connector endpoint (unix:///tmp/.. or tcp)
+  // audio_codecs lists audio encodings accepted by the connector.
+  repeated string audio_codecs = 4;
+  // video_codecs lists video encodings accepted by the connector.
+  repeated string video_codecs = 5;
+  // payload carries provider-specific configuration or binding metadata bytes.
+  bytes payload = 6; // provider-specific JSON/YAML
+  // binary_types lists MIME types accepted for BinaryFrame payloads.
+  repeated string binary_types = 7; // MIME types accepted for BinaryFrame
+  // protocol_version reports the transport contract version expected by the connector.
+  string protocol_version = 8; // transport contract version (e.g., "1.0.0")
+}
+
+// DataRequest carries packet data from the SDK/engram side to the connector.
+message DataRequest {
+  // frame carries exactly one media payload for the current packet.
+  oneof frame {
+    // audio carries an audio payload for the packet.
+    AudioFrame audio = 1;
+    // video carries a video payload for the packet.
+    VideoFrame video = 2;
+    // binary carries an opaque binary payload for the packet.
+    BinaryFrame binary = 3;
+  }
+  // metadata carries story, run, step, or provider-specific routing hints.
+  map<string, string> metadata = 4;
+  // payload carries the structured JSON-like business payload.
+  google.protobuf.Struct payload = 5;
+  // inputs carries evaluated step inputs associated with the packet.
+  google.protobuf.Struct inputs = 6;
+  // transports enumerates transport descriptors relevant to the packet.
+  repeated TransportDescriptor transports = 7;
+  // envelope carries ordering, partitioning, and chunking metadata for the packet.
+  StreamEnvelope envelope = 8;
+}
+
+// DataResponse carries packet data from the connector back to the SDK/engram side.
+message DataResponse {
+  // frame carries exactly one media payload for the current packet.
+  oneof frame {
+    // audio carries an audio payload for the packet.
+    AudioFrame audio = 1;
+    // video carries a video payload for the packet.
+    VideoFrame video = 2;
+    // binary carries an opaque binary payload for the packet.
+    BinaryFrame binary = 3;
+  }
+  // metadata carries story, run, step, or provider-specific routing hints.
+  map<string, string> metadata = 4;
+  // payload carries the structured JSON-like business payload.
+  google.protobuf.Struct payload = 5;
+  // inputs carries evaluated step inputs associated with the packet.
+  google.protobuf.Struct inputs = 6;
+  // transports enumerates transport descriptors relevant to the packet.
+  repeated TransportDescriptor transports = 7;
+  // envelope carries ordering, partitioning, and chunking metadata for the packet.
+  StreamEnvelope envelope = 8;
+}
+
+// HubPushRequest is sent by the hub to push DataPackets to passive connectors.
+message HubPushRequest {
+  // metadata carries story, run, step, or provider-specific routing hints.
+  map<string, string> metadata = 1;
+  // payload carries the structured JSON-like business payload.
+  google.protobuf.Struct payload = 2;
+  // inputs carries evaluated step inputs associated with the packet.
+  google.protobuf.Struct inputs = 3;
+  // frame carries exactly one media payload alongside the structured packet context.
+  oneof frame {
+    // audio carries an audio payload for the packet.
+    AudioFrame audio = 4;
+    // video carries a video payload for the packet.
+    VideoFrame video = 5;
+    // binary carries an opaque binary payload for the packet.
+    BinaryFrame binary = 6;
+  }
+  // transports enumerates transport descriptors relevant to the packet.
+  repeated TransportDescriptor transports = 7;
+  // envelope carries ordering, partitioning, and chunking metadata for the packet.
+  StreamEnvelope envelope = 8;
+}
+
+// HubPushResponse is sent by the connector back to the hub with the engram response.
+message HubPushResponse {
+  // metadata carries story, run, step, or provider-specific routing hints.
+  map<string, string> metadata = 1;
+  // payload carries the structured JSON-like business payload.
+  google.protobuf.Struct payload = 2;
+  // inputs carries evaluated step inputs associated with the packet.
+  google.protobuf.Struct inputs = 3;
+  // transports enumerates transport descriptors relevant to the packet.
+  repeated TransportDescriptor transports = 4;
+  // frame carries exactly one media payload alongside the structured packet context.
+  oneof frame {
+    // audio carries an audio payload for the packet.
+    AudioFrame audio = 5;
+    // video carries a video payload for the packet.
+    VideoFrame video = 6;
+    // binary carries an opaque binary payload for the packet.
+    BinaryFrame binary = 7;
+  }
+  // envelope carries ordering, partitioning, and chunking metadata for the packet.
+  StreamEnvelope envelope = 8;
+}
+
+// TransportConnectorService is the connector-side transport contract used by engrams and sidecars.
+service TransportConnectorService {
+  // Data is the bidirectional stream between the local engram and the connector.
+  rpc Data(stream DataRequest) returns (stream DataResponse);
+
+  // Control is the control channel for lifecycle management and capability negotiation.
+  rpc Control(stream ControlRequest) returns (stream ControlResponse);
+
+  // HubPush is a hub-initiated bidirectional stream for pushing packets to passive engrams.
+  // The hub connects to the connector and pushes packets, which the connector forwards to the local engram.
+  rpc HubPush(stream HubPushRequest) returns (stream HubPushResponse);
+}

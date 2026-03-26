@@ -1,0 +1,75 @@
+name: Lint
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  golangci-lint:
+    name: Go linters
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          check-latest: true
+          cache: true
+
+      - name: Check linter configuration
+        run: make lint-config
+
+      - name: Run golangci-lint
+        run: make lint
+
+  generated-go:
+    name: Generated bindings freshness
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Buf
+        uses: bufbuild/buf-setup-action@v1
+
+      - name: Check generated Go bindings are up to date
+        run: |
+          make generate
+          git diff --exit-code -- gen/go/proto
+
+  buf:
+    name: Buf lint & breaking checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Buf
+        uses: bufbuild/buf-setup-action@v1
+
+      - name: Fetch main compatibility baseline
+        id: baseline
+        run: |
+          if git ls-remote --exit-code --heads origin main >/dev/null 2>&1; then
+            git fetch origin main:main
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run buf lint
+        run: make buf-lint
+
+      - name: Check for breaking changes
+        if: steps.baseline.outputs.available == 'true'
+        run: make buf-breaking
+
+      - name: Skip breaking check during repository bootstrap
+        if: steps.baseline.outputs.available != 'true'
+        run: echo "Skipping buf-breaking because origin/main is not available yet."

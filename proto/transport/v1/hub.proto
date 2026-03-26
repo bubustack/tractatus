@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package transport.v1;
+
+option go_package = "github.com/bubustack/tractatus/gen/go/proto/transport/v1;transportv1";
+
+import "google/protobuf/struct.proto";
+import "transport/v1/transport.proto";
+
+// DataPacket represents a unit of data moving through the transport hub.
+message DataPacket {
+  // Metadata captures story, run, and step identifiers as well as envelope hints.
+  map<string, string> metadata = 1;
+
+  // Payload is the logical JSON payload emitted by upstream steps.
+  google.protobuf.Struct payload = 2;
+
+  // Inputs contains CEL-evaluated "with" blocks for downstream steps.
+  google.protobuf.Struct inputs = 3;
+
+  // Transports mirror the Story's declared transports for downstream introspection.
+  repeated TransportDescriptor transports = 4;
+
+  // frame carries exactly one media payload alongside the structured packet context.
+  oneof frame {
+    // audio carries an audio payload for the packet.
+    AudioFrame audio = 5;
+    // video carries a video payload for the packet.
+    VideoFrame video = 6;
+    // binary carries an opaque binary payload for the packet.
+    BinaryFrame binary = 7;
+  }
+  // envelope carries ordering, partitioning, and chunking metadata for the packet.
+  StreamEnvelope envelope = 8;
+}
+
+// ProcessRequest carries either a routed packet or backpressure updates from the sender.
+message ProcessRequest {
+  // packet is the next transport payload emitted into the hub stream.
+  DataPacket packet = 1;
+  // flow updates acknowledgement state or backpressure hints without carrying a packet.
+  FlowControl flow = 2;
+}
+
+// ProcessResponse carries either a routed packet or backpressure updates from the hub.
+message ProcessResponse {
+  // packet is the next transport payload emitted back to the caller.
+  DataPacket packet = 1;
+  // flow updates acknowledgement state or backpressure hints without carrying a packet.
+  FlowControl flow = 2;
+}
+
+// HubService routes bidirectional packet streams between runtime participants.
+service HubService {
+  // Process is a bidirectional stream that routes DataPackets between engrams.
+  rpc Process (stream ProcessRequest) returns (stream ProcessResponse);
+}

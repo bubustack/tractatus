@@ -1,0 +1,121 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: release-please-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify release commit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          check-latest: true
+          cache: true
+
+      - name: Setup Buf
+        uses: bufbuild/buf-setup-action@v1
+
+      - name: Run linters
+        run: make lint
+
+      - name: Run tests
+        run: make test
+
+      - name: Run buf lint
+        run: make buf-lint
+
+      - name: Fetch main compatibility baseline
+        id: baseline
+        run: |
+          if git ls-remote --exit-code --heads origin main >/dev/null 2>&1; then
+            git fetch origin main:main
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check for breaking changes
+        if: steps.baseline.outputs.available == 'true'
+        run: make buf-breaking
+
+      - name: Skip breaking check during repository bootstrap
+        if: steps.baseline.outputs.available != 'true'
+        run: echo "Skipping buf-breaking because origin/main is not available yet."
+
+      - name: Verify generated Go bindings are current
+        run: |
+          make generate
+          git diff --exit-code -- gen/go/proto
+
+  release-please:
+    needs: verify
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - name: Release Please
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          config-file: .github/release-please-config.json
+          manifest-file: .github/.release-please-manifest.json
+
+      - name: Checkout
+        if: ${{ steps.release.outputs.release_created }}
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        if: ${{ steps.release.outputs.release_created }}
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          check-latest: true
+          cache: true
+
+      - name: Warm Go module caches (proxy/sum/pkg.go.dev)
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          set -euo pipefail
+          MOD=github.com/${{ github.repository }}
+          VER=${{ steps.release.outputs.tag_name }}
+          echo "Warming proxy.golang.org for $MOD@$VER"
+          curl -sSfL "https://proxy.golang.org/${MOD}/@v/${VER}.info" || true
+          echo "Warming sum.golang.org for $MOD@$VER"
+          curl -sSfL "https://sum.golang.org/lookup/${MOD}@${VER}" || true
+          echo "Triggering pkg.go.dev indexing for $MOD@$VER"
+          curl -sSfL "https://pkg.go.dev/${MOD}@${VER}" > /dev/null || true
+          echo "Triggering Go Report Card for $MOD"
+          curl -X POST -F "repo=${MOD}" https://goreportcard.com/checks
+
+      - name: Create release summary
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          {
+            echo "## Release ${{ steps.release.outputs.tag_name }} 🚀"
+            echo
+            echo "Tractatus Go module:"
+            echo '```bash'
+            echo "go get github.com/bubustack/tractatus@${{ steps.release.outputs.tag_name }}"
+            echo '```'
+            echo
+            echo "The proto bundle is uploaded by the Publish Proto Bundle workflow after the GitHub Release is published."
+          } >> "$GITHUB_STEP_SUMMARY"
