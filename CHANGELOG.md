@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.1](https://github.com/bubustack/tractatus/compare/v0.1.0...v0.1.1) (2026-04-06)
+
+
+### Build System
+
+* **deps:** bump google.golang.org/grpc from 1.79.3 to 1.80.0 in the networking group ([21b7856](https://github.com/bubustack/tractatus/commit/21b7856ba6053f2417d43e859cf911f0053ec139))
+* **deps:** bump google.golang.org/grpc in the networking group ([9c02c83](https://github.com/bubustack/tractatus/commit/9c02c83975663340d979f78377bd26a36c494e37))
+
 ## 0.1.0 (2026-03-26)
 
 
