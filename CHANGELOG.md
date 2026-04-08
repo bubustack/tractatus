@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/bubustack/tractatus/compare/v0.1.1...v0.1.2) (2026-04-08)
+
+
+### Features
+
+* update golang version ([a012bab](https://github.com/bubustack/tractatus/commit/a012bab0332a6f749d74792a793af5c575c128aa))
+
 ## [0.1.1](https://github.com/bubustack/tractatus/compare/v0.1.0...v0.1.1) (2026-04-06)
 
 
