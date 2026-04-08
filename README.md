@@ -61,7 +61,7 @@ make buf-breaking  # Compatibility diff against the local main baseline
 make generate      # Regenerate tracked Go bindings under gen/go
 ```
 
-All commands rely on the Buf CLI and Go 1.25.1+. The lint (`.github/workflows/lint.yml`) and test (`.github/workflows/test.yml`) workflows run the same checks on every push and pull request.
+All commands rely on the Buf CLI and Go 1.26+. The lint (`.github/workflows/lint.yml`) and test (`.github/workflows/test.yml`) workflows run the same checks on every push and pull request.
 
 ## Publishing multi-language artifacts
 

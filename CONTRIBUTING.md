@@ -40,7 +40,7 @@ Tractatus houses the transport proto definitions, generated Go bindings, and hel
 
 ### Prerequisites
 
-- Go 1.25.1 or newer
+- Go 1.26+
 - [Buf CLI](https://buf.build/docs/installation) for linting, breaking-change checks, and code generation
 - `make`
 

@@ -1,6 +1,6 @@
 module github.com/bubustack/tractatus
 
-go 1.25.1
+go 1.26.2
 
 require (
 	google.golang.org/grpc v1.80.0
