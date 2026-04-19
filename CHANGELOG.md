@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/bubustack/tractatus/compare/v0.1.2...v0.1.3) (2026-04-19)
+
+
+### Miscellaneous
+
+* use dedicated release token for release-please ([659ee88](https://github.com/bubustack/tractatus/commit/659ee88fbf5caa29bfa764930756a06cdb4136ab))
+
 ## [0.1.2](https://github.com/bubustack/tractatus/compare/v0.1.1...v0.1.2) (2026-04-08)
 
 
