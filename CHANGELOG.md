@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/bubustack/tractatus/compare/v0.1.3...v0.1.4) (2026-04-19)
+
+
+### Miscellaneous
+
+* update dependencies ([9134e52](https://github.com/bubustack/tractatus/commit/9134e523bc0a2ff17cf31d3160646035e4baf129))
+
 ## [0.1.3](https://github.com/bubustack/tractatus/compare/v0.1.2...v0.1.3) (2026-04-19)
 
 
