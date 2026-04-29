@@ -29,13 +29,27 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
 // TransportConnectorService is the connector-side transport contract used by engrams and sidecars.
+// Production deployments should run this service over authenticated transport
+// channels. Callers must not trust metadata-carried identity without a
+// deployment-level authentication and authorization check such as mTLS
+// certificate SAN binding, namespace/step identity binding, or equivalent
+// workload identity enforcement.
 type TransportConnectorServiceClient interface {
 	// Data is the bidirectional stream between the local engram and the connector.
+	// Implementations should enforce bounded message sizes, keepalive policy,
+	// backpressure, and maximum stream/session duration outside the protobuf
+	// schema. Invalid or oversized messages should be rejected at the stream
+	// boundary before conversion into runtime structures.
 	Data(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[DataRequest, DataResponse], error)
 	// Control is the control channel for lifecycle management and capability negotiation.
+	// Control streams should be authenticated the same way as Data streams and
+	// should rate-limit or coalesce high-frequency directives such as heartbeats
+	// and acknowledgements.
 	Control(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[ControlRequest, ControlResponse], error)
 	// HubPush is a hub-initiated bidirectional stream for pushing packets to passive engrams.
 	// The hub connects to the connector and pushes packets, which the connector forwards to the local engram.
+	// HubPush callers should be authorized as the owning hub/runtime before the
+	// connector accepts payloads.
 	HubPush(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[HubPushRequest, HubPushResponse], error)
 }
 
@@ -91,13 +105,27 @@ type TransportConnectorService_HubPushClient = grpc.BidiStreamingClient[HubPushR
 // for forward compatibility.
 //
 // TransportConnectorService is the connector-side transport contract used by engrams and sidecars.
+// Production deployments should run this service over authenticated transport
+// channels. Callers must not trust metadata-carried identity without a
+// deployment-level authentication and authorization check such as mTLS
+// certificate SAN binding, namespace/step identity binding, or equivalent
+// workload identity enforcement.
 type TransportConnectorServiceServer interface {
 	// Data is the bidirectional stream between the local engram and the connector.
+	// Implementations should enforce bounded message sizes, keepalive policy,
+	// backpressure, and maximum stream/session duration outside the protobuf
+	// schema. Invalid or oversized messages should be rejected at the stream
+	// boundary before conversion into runtime structures.
 	Data(grpc.BidiStreamingServer[DataRequest, DataResponse]) error
 	// Control is the control channel for lifecycle management and capability negotiation.
+	// Control streams should be authenticated the same way as Data streams and
+	// should rate-limit or coalesce high-frequency directives such as heartbeats
+	// and acknowledgements.
 	Control(grpc.BidiStreamingServer[ControlRequest, ControlResponse]) error
 	// HubPush is a hub-initiated bidirectional stream for pushing packets to passive engrams.
 	// The hub connects to the connector and pushes packets, which the connector forwards to the local engram.
+	// HubPush callers should be authorized as the owning hub/runtime before the
+	// connector accepts payloads.
 	HubPush(grpc.BidiStreamingServer[HubPushRequest, HubPushResponse]) error
 	mustEmbedUnimplementedTransportConnectorServiceServer()
 }

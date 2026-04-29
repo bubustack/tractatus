@@ -3,6 +3,7 @@ package envelope
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 
 	transportpb "github.com/bubustack/tractatus/gen/go/proto/transport/v1"
 )
@@ -10,6 +11,8 @@ import (
 const (
 	// MIMEType is the canonical identifier for envelope-based BinaryFrame payloads.
 	MIMEType = "application/vnd.bubu.packet+json"
+	// MaxEnvelopeSize is the maximum JSON envelope payload accepted for decoding.
+	MaxEnvelopeSize = 10 * 1024 * 1024
 	// LatestVersion is the default schema version applied when one is not provided.
 	LatestVersion = "v1"
 
@@ -78,6 +81,15 @@ func Marshal(env *Envelope) ([]byte, error) {
 		return nil, fmt.Errorf("envelope is nil")
 	}
 	out := *env
+	if out.TimestampMs < 0 {
+		return nil, fmt.Errorf("envelope timestamp_ms must not be negative")
+	}
+	if len(out.Payload) > 0 && !json.Valid(out.Payload) {
+		return nil, fmt.Errorf("envelope payload is not valid JSON")
+	}
+	if len(out.Inputs) > 0 && !json.Valid(out.Inputs) {
+		return nil, fmt.Errorf("envelope inputs is not valid JSON")
+	}
 	if out.Version == "" {
 		out.Version = LatestVersion
 	}
@@ -91,6 +103,9 @@ func Marshal(env *Envelope) ([]byte, error) {
 func Unmarshal(data []byte) (*Envelope, error) {
 	if len(data) == 0 {
 		return nil, fmt.Errorf("envelope payload empty")
+	}
+	if len(data) > MaxEnvelopeSize {
+		return nil, fmt.Errorf("envelope payload exceeds maximum size of %d bytes", MaxEnvelopeSize)
 	}
 	var env Envelope
 	if err := json.Unmarshal(data, &env); err != nil {
@@ -132,6 +147,9 @@ func FromBinaryFrame(frame *transportpb.BinaryFrame) (*Envelope, error) {
 		return nil, err
 	}
 	if env.TimestampMs == 0 && frame.GetTimestampMs() > 0 {
+		if frame.GetTimestampMs() > uint64(math.MaxInt64) {
+			return nil, fmt.Errorf("binary frame timestamp_ms %d exceeds maximum supported timestamp", frame.GetTimestampMs())
+		}
 		env.TimestampMs = int64(frame.GetTimestampMs())
 	}
 	return env, nil

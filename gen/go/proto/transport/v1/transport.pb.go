@@ -7,6 +7,7 @@
 package transportv1
 
 import (
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	structpb "google.golang.org/protobuf/types/known/structpb"
@@ -162,6 +163,108 @@ func (x FlowControlSignal) Number() protoreflect.EnumNumber {
 // Deprecated: Use FlowControlSignal.Descriptor instead.
 func (FlowControlSignal) EnumDescriptor() ([]byte, []int) {
 	return file_transport_v1_transport_proto_rawDescGZIP(), []int{1}
+}
+
+// StreamType enumerates canonical semantic event types used in packet metadata.
+// The enum provides cross-language stability for SDKs; the canonical wire names
+// remain the dot-delimited strings documented in each value comment.
+type StreamType int32
+
+const (
+	StreamType_STREAM_TYPE_UNSPECIFIED StreamType = 0
+	// speech.transcript.v1
+	StreamType_STREAM_TYPE_SPEECH_TRANSCRIPT StreamType = 1
+	// speech.translation.v1
+	StreamType_STREAM_TYPE_SPEECH_TRANSLATION StreamType = 2
+	// speech.transcript.delta
+	StreamType_STREAM_TYPE_SPEECH_TRANSCRIPT_DELTA StreamType = 3
+	// speech.transcript.done
+	StreamType_STREAM_TYPE_SPEECH_TRANSCRIPT_DONE StreamType = 4
+	// speech.vad.active
+	StreamType_STREAM_TYPE_SPEECH_VAD_ACTIVE StreamType = 5
+	// speech.vad.inactive
+	StreamType_STREAM_TYPE_SPEECH_VAD_INACTIVE StreamType = 6
+	// speech.audio.v1
+	StreamType_STREAM_TYPE_SPEECH_AUDIO StreamType = 7
+	// speech.audio.delta
+	StreamType_STREAM_TYPE_SPEECH_AUDIO_DELTA StreamType = 8
+	// speech.audio.done
+	StreamType_STREAM_TYPE_SPEECH_AUDIO_DONE StreamType = 9
+	// speech.audio.summary
+	StreamType_STREAM_TYPE_SPEECH_AUDIO_SUMMARY StreamType = 10
+	// speech.turn.v1
+	StreamType_STREAM_TYPE_SPEECH_TURN StreamType = 11
+	// chat.message.v1
+	StreamType_STREAM_TYPE_CHAT_MESSAGE StreamType = 12
+	// chat.response.v1
+	StreamType_STREAM_TYPE_CHAT_RESPONSE StreamType = 13
+	// openai.chat.v1
+	StreamType_STREAM_TYPE_OPENAI_CHAT StreamType = 14
+)
+
+// Enum value maps for StreamType.
+var (
+	StreamType_name = map[int32]string{
+		0:  "STREAM_TYPE_UNSPECIFIED",
+		1:  "STREAM_TYPE_SPEECH_TRANSCRIPT",
+		2:  "STREAM_TYPE_SPEECH_TRANSLATION",
+		3:  "STREAM_TYPE_SPEECH_TRANSCRIPT_DELTA",
+		4:  "STREAM_TYPE_SPEECH_TRANSCRIPT_DONE",
+		5:  "STREAM_TYPE_SPEECH_VAD_ACTIVE",
+		6:  "STREAM_TYPE_SPEECH_VAD_INACTIVE",
+		7:  "STREAM_TYPE_SPEECH_AUDIO",
+		8:  "STREAM_TYPE_SPEECH_AUDIO_DELTA",
+		9:  "STREAM_TYPE_SPEECH_AUDIO_DONE",
+		10: "STREAM_TYPE_SPEECH_AUDIO_SUMMARY",
+		11: "STREAM_TYPE_SPEECH_TURN",
+		12: "STREAM_TYPE_CHAT_MESSAGE",
+		13: "STREAM_TYPE_CHAT_RESPONSE",
+		14: "STREAM_TYPE_OPENAI_CHAT",
+	}
+	StreamType_value = map[string]int32{
+		"STREAM_TYPE_UNSPECIFIED":             0,
+		"STREAM_TYPE_SPEECH_TRANSCRIPT":       1,
+		"STREAM_TYPE_SPEECH_TRANSLATION":      2,
+		"STREAM_TYPE_SPEECH_TRANSCRIPT_DELTA": 3,
+		"STREAM_TYPE_SPEECH_TRANSCRIPT_DONE":  4,
+		"STREAM_TYPE_SPEECH_VAD_ACTIVE":       5,
+		"STREAM_TYPE_SPEECH_VAD_INACTIVE":     6,
+		"STREAM_TYPE_SPEECH_AUDIO":            7,
+		"STREAM_TYPE_SPEECH_AUDIO_DELTA":      8,
+		"STREAM_TYPE_SPEECH_AUDIO_DONE":       9,
+		"STREAM_TYPE_SPEECH_AUDIO_SUMMARY":    10,
+		"STREAM_TYPE_SPEECH_TURN":             11,
+		"STREAM_TYPE_CHAT_MESSAGE":            12,
+		"STREAM_TYPE_CHAT_RESPONSE":           13,
+		"STREAM_TYPE_OPENAI_CHAT":             14,
+	}
+)
+
+func (x StreamType) Enum() *StreamType {
+	p := new(StreamType)
+	*p = x
+	return p
+}
+
+func (x StreamType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (StreamType) Descriptor() protoreflect.EnumDescriptor {
+	return file_transport_v1_transport_proto_enumTypes[2].Descriptor()
+}
+
+func (StreamType) Type() protoreflect.EnumType {
+	return &file_transport_v1_transport_proto_enumTypes[2]
+}
+
+func (x StreamType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use StreamType.Descriptor instead.
+func (StreamType) EnumDescriptor() ([]byte, []int) {
+	return file_transport_v1_transport_proto_rawDescGZIP(), []int{2}
 }
 
 // AudioFrame carries raw or passthrough audio bytes plus basic timing metadata.
@@ -696,6 +799,71 @@ func (x *ControlRequest) GetCustomAction() string {
 	return ""
 }
 
+// ControlError carries structured error details for CONTROL_ACTION_ERROR responses.
+type ControlError struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// code is an implementation-defined application error code.
+	Code int32 `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+	// message is a human-readable error description safe for logs and status.
+	// Do not include stack traces, secrets, internal paths, or credentials.
+	Message string `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	// details carries bounded domain-specific context for debuggability.
+	Details       map[string]string `protobuf:"bytes,3,rep,name=details,proto3" json:"details,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ControlError) Reset() {
+	*x = ControlError{}
+	mi := &file_transport_v1_transport_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ControlError) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ControlError) ProtoMessage() {}
+
+func (x *ControlError) ProtoReflect() protoreflect.Message {
+	mi := &file_transport_v1_transport_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ControlError.ProtoReflect.Descriptor instead.
+func (*ControlError) Descriptor() ([]byte, []int) {
+	return file_transport_v1_transport_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ControlError) GetCode() int32 {
+	if x != nil {
+		return x.Code
+	}
+	return 0
+}
+
+func (x *ControlError) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *ControlError) GetDetails() map[string]string {
+	if x != nil {
+		return x.Details
+	}
+	return nil
+}
+
 // ControlResponse is sent by the connector to report readiness, capabilities, or acknowledgements.
 type ControlResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -706,14 +874,16 @@ type ControlResponse struct {
 	// flow carries acknowledgement or backpressure updates piggybacked on the control stream.
 	Flow *FlowControl `protobuf:"bytes,3,opt,name=flow,proto3" json:"flow,omitempty"`
 	// custom_action preserves non-standard verbs without reopening the standard enum.
-	CustomAction  string `protobuf:"bytes,4,opt,name=custom_action,json=customAction,proto3" json:"custom_action,omitempty"`
+	CustomAction string `protobuf:"bytes,4,opt,name=custom_action,json=customAction,proto3" json:"custom_action,omitempty"`
+	// error carries structured error details when action is CONTROL_ACTION_ERROR.
+	Error         *ControlError `protobuf:"bytes,5,opt,name=error,proto3" json:"error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ControlResponse) Reset() {
 	*x = ControlResponse{}
-	mi := &file_transport_v1_transport_proto_msgTypes[6]
+	mi := &file_transport_v1_transport_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -725,7 +895,7 @@ func (x *ControlResponse) String() string {
 func (*ControlResponse) ProtoMessage() {}
 
 func (x *ControlResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_v1_transport_proto_msgTypes[6]
+	mi := &file_transport_v1_transport_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -738,7 +908,7 @@ func (x *ControlResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ControlResponse.ProtoReflect.Descriptor instead.
 func (*ControlResponse) Descriptor() ([]byte, []int) {
-	return file_transport_v1_transport_proto_rawDescGZIP(), []int{6}
+	return file_transport_v1_transport_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ControlResponse) GetAction() ControlAction {
@@ -769,6 +939,13 @@ func (x *ControlResponse) GetCustomAction() string {
 	return ""
 }
 
+func (x *ControlResponse) GetError() *ControlError {
+	if x != nil {
+		return x.Error
+	}
+	return nil
+}
+
 // PartitionAck checkpoints ordered delivery progress for a specific partition.
 type PartitionAck struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -782,7 +959,7 @@ type PartitionAck struct {
 
 func (x *PartitionAck) Reset() {
 	*x = PartitionAck{}
-	mi := &file_transport_v1_transport_proto_msgTypes[7]
+	mi := &file_transport_v1_transport_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -794,7 +971,7 @@ func (x *PartitionAck) String() string {
 func (*PartitionAck) ProtoMessage() {}
 
 func (x *PartitionAck) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_v1_transport_proto_msgTypes[7]
+	mi := &file_transport_v1_transport_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -807,7 +984,7 @@ func (x *PartitionAck) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PartitionAck.ProtoReflect.Descriptor instead.
 func (*PartitionAck) Descriptor() ([]byte, []int) {
-	return file_transport_v1_transport_proto_rawDescGZIP(), []int{7}
+	return file_transport_v1_transport_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *PartitionAck) GetPartition() string {
@@ -843,7 +1020,7 @@ type FlowControl struct {
 
 func (x *FlowControl) Reset() {
 	*x = FlowControl{}
-	mi := &file_transport_v1_transport_proto_msgTypes[8]
+	mi := &file_transport_v1_transport_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -855,7 +1032,7 @@ func (x *FlowControl) String() string {
 func (*FlowControl) ProtoMessage() {}
 
 func (x *FlowControl) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_v1_transport_proto_msgTypes[8]
+	mi := &file_transport_v1_transport_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -868,7 +1045,7 @@ func (x *FlowControl) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FlowControl.ProtoReflect.Descriptor instead.
 func (*FlowControl) Descriptor() ([]byte, []int) {
-	return file_transport_v1_transport_proto_rawDescGZIP(), []int{8}
+	return file_transport_v1_transport_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *FlowControl) GetAck() uint64 {
@@ -935,7 +1112,7 @@ type StreamEnvelope struct {
 
 func (x *StreamEnvelope) Reset() {
 	*x = StreamEnvelope{}
-	mi := &file_transport_v1_transport_proto_msgTypes[9]
+	mi := &file_transport_v1_transport_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -947,7 +1124,7 @@ func (x *StreamEnvelope) String() string {
 func (*StreamEnvelope) ProtoMessage() {}
 
 func (x *StreamEnvelope) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_v1_transport_proto_msgTypes[9]
+	mi := &file_transport_v1_transport_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -960,7 +1137,7 @@ func (x *StreamEnvelope) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StreamEnvelope.ProtoReflect.Descriptor instead.
 func (*StreamEnvelope) Descriptor() ([]byte, []int) {
-	return file_transport_v1_transport_proto_rawDescGZIP(), []int{9}
+	return file_transport_v1_transport_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *StreamEnvelope) GetStreamId() string {
@@ -1044,7 +1221,7 @@ type BindingInfo struct {
 
 func (x *BindingInfo) Reset() {
 	*x = BindingInfo{}
-	mi := &file_transport_v1_transport_proto_msgTypes[10]
+	mi := &file_transport_v1_transport_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1056,7 +1233,7 @@ func (x *BindingInfo) String() string {
 func (*BindingInfo) ProtoMessage() {}
 
 func (x *BindingInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_v1_transport_proto_msgTypes[10]
+	mi := &file_transport_v1_transport_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1069,7 +1246,7 @@ func (x *BindingInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BindingInfo.ProtoReflect.Descriptor instead.
 func (*BindingInfo) Descriptor() ([]byte, []int) {
-	return file_transport_v1_transport_proto_rawDescGZIP(), []int{10}
+	return file_transport_v1_transport_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *BindingInfo) GetTransportRef() string {
@@ -1155,7 +1332,7 @@ type DataRequest struct {
 
 func (x *DataRequest) Reset() {
 	*x = DataRequest{}
-	mi := &file_transport_v1_transport_proto_msgTypes[11]
+	mi := &file_transport_v1_transport_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1167,7 +1344,7 @@ func (x *DataRequest) String() string {
 func (*DataRequest) ProtoMessage() {}
 
 func (x *DataRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_v1_transport_proto_msgTypes[11]
+	mi := &file_transport_v1_transport_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1180,7 +1357,7 @@ func (x *DataRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DataRequest.ProtoReflect.Descriptor instead.
 func (*DataRequest) Descriptor() ([]byte, []int) {
-	return file_transport_v1_transport_proto_rawDescGZIP(), []int{11}
+	return file_transport_v1_transport_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *DataRequest) GetFrame() isDataRequest_Frame {
@@ -1304,7 +1481,7 @@ type DataResponse struct {
 
 func (x *DataResponse) Reset() {
 	*x = DataResponse{}
-	mi := &file_transport_v1_transport_proto_msgTypes[12]
+	mi := &file_transport_v1_transport_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1316,7 +1493,7 @@ func (x *DataResponse) String() string {
 func (*DataResponse) ProtoMessage() {}
 
 func (x *DataResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_v1_transport_proto_msgTypes[12]
+	mi := &file_transport_v1_transport_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1329,7 +1506,7 @@ func (x *DataResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DataResponse.ProtoReflect.Descriptor instead.
 func (*DataResponse) Descriptor() ([]byte, []int) {
-	return file_transport_v1_transport_proto_rawDescGZIP(), []int{12}
+	return file_transport_v1_transport_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *DataResponse) GetFrame() isDataResponse_Frame {
@@ -1453,7 +1630,7 @@ type HubPushRequest struct {
 
 func (x *HubPushRequest) Reset() {
 	*x = HubPushRequest{}
-	mi := &file_transport_v1_transport_proto_msgTypes[13]
+	mi := &file_transport_v1_transport_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1465,7 +1642,7 @@ func (x *HubPushRequest) String() string {
 func (*HubPushRequest) ProtoMessage() {}
 
 func (x *HubPushRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_v1_transport_proto_msgTypes[13]
+	mi := &file_transport_v1_transport_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1478,7 +1655,7 @@ func (x *HubPushRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HubPushRequest.ProtoReflect.Descriptor instead.
 func (*HubPushRequest) Descriptor() ([]byte, []int) {
-	return file_transport_v1_transport_proto_rawDescGZIP(), []int{13}
+	return file_transport_v1_transport_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *HubPushRequest) GetMetadata() map[string]string {
@@ -1602,7 +1779,7 @@ type HubPushResponse struct {
 
 func (x *HubPushResponse) Reset() {
 	*x = HubPushResponse{}
-	mi := &file_transport_v1_transport_proto_msgTypes[14]
+	mi := &file_transport_v1_transport_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1614,7 +1791,7 @@ func (x *HubPushResponse) String() string {
 func (*HubPushResponse) ProtoMessage() {}
 
 func (x *HubPushResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transport_v1_transport_proto_msgTypes[14]
+	mi := &file_transport_v1_transport_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1627,7 +1804,7 @@ func (x *HubPushResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HubPushResponse.ProtoReflect.Descriptor instead.
 func (*HubPushResponse) Descriptor() ([]byte, []int) {
-	return file_transport_v1_transport_proto_rawDescGZIP(), []int{14}
+	return file_transport_v1_transport_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *HubPushResponse) GetMetadata() map[string]string {
@@ -1728,144 +1905,166 @@ var File_transport_v1_transport_proto protoreflect.FileDescriptor
 
 const file_transport_v1_transport_proto_rawDesc = "" +
 	"\n" +
-	"\x1ctransport/v1/transport.proto\x12\ftransport.v1\x1a\x1cgoogle/protobuf/struct.proto\"\x99\x01\n" +
+	"\x1ctransport/v1/transport.proto\x12\ftransport.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\"\xc7\x01\n" +
 	"\n" +
-	"AudioFrame\x12\x10\n" +
-	"\x03pcm\x18\x01 \x01(\fR\x03pcm\x12$\n" +
-	"\x0esample_rate_hz\x18\x02 \x01(\x05R\fsampleRateHz\x12\x1a\n" +
-	"\bchannels\x18\x03 \x01(\x05R\bchannels\x12\x14\n" +
-	"\x05codec\x18\x04 \x01(\tR\x05codec\x12!\n" +
-	"\ftimestamp_ms\x18\x05 \x01(\x04R\vtimestampMs\"\x9f\x01\n" +
+	"AudioFrame\x12\x1c\n" +
+	"\x03pcm\x18\x01 \x01(\fB\n" +
+	"\xbaH\az\x05\x18\x80\x80\x80\x05R\x03pcm\x122\n" +
+	"\x0esample_rate_hz\x18\x02 \x01(\x05B\f\xbaH\t\x1a\a\x18\x80\xdc\v(\xc0>R\fsampleRateHz\x12%\n" +
+	"\bchannels\x18\x03 \x01(\x05B\t\xbaH\x06\x1a\x04\x18\b(\x01R\bchannels\x12\x1d\n" +
+	"\x05codec\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x18 R\x05codec\x12!\n" +
+	"\ftimestamp_ms\x18\x05 \x01(\x04R\vtimestampMs\"\xca\x01\n" +
 	"\n" +
-	"VideoFrame\x12\x18\n" +
-	"\apayload\x18\x01 \x01(\fR\apayload\x12\x14\n" +
-	"\x05codec\x18\x02 \x01(\tR\x05codec\x12\x14\n" +
-	"\x05width\x18\x03 \x01(\rR\x05width\x12\x16\n" +
-	"\x06height\x18\x04 \x01(\rR\x06height\x12!\n" +
+	"VideoFrame\x12$\n" +
+	"\apayload\x18\x01 \x01(\fB\n" +
+	"\xbaH\az\x05\x18\x80\x80\x80\x05R\apayload\x12\x1d\n" +
+	"\x05codec\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x18 R\x05codec\x12\x1f\n" +
+	"\x05width\x18\x03 \x01(\rB\t\xbaH\x06*\x04\x18\x80\x80\x01R\x05width\x12!\n" +
+	"\x06height\x18\x04 \x01(\rB\t\xbaH\x06*\x04\x18\x80\x80\x01R\x06height\x12!\n" +
 	"\ftimestamp_ms\x18\x05 \x01(\x04R\vtimestampMs\x12\x10\n" +
-	"\x03raw\x18\x06 \x01(\bR\x03raw\"g\n" +
-	"\vBinaryFrame\x12\x18\n" +
-	"\apayload\x18\x01 \x01(\fR\apayload\x12\x1b\n" +
-	"\tmime_type\x18\x02 \x01(\tR\bmimeType\x12!\n" +
-	"\ftimestamp_ms\x18\x03 \x01(\x04R\vtimestampMs\"\x82\x01\n" +
-	"\x13TransportDescriptor\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
-	"\x04kind\x18\x02 \x01(\tR\x04kind\x12\x12\n" +
-	"\x04mode\x18\x03 \x01(\tR\x04mode\x12/\n" +
-	"\x06config\x18\x04 \x01(\v2\x17.google.protobuf.StructR\x06config\"\x98\x04\n" +
+	"\x03raw\x18\x06 \x01(\bR\x03raw\"}\n" +
+	"\vBinaryFrame\x12$\n" +
+	"\apayload\x18\x01 \x01(\fB\n" +
+	"\xbaH\az\x05\x18\x80\x80\x80\x05R\apayload\x12%\n" +
+	"\tmime_type\x18\x02 \x01(\tB\b\xbaH\x05r\x03\x18\xff\x01R\bmimeType\x12!\n" +
+	"\ftimestamp_ms\x18\x03 \x01(\x04R\vtimestampMs\"\xa0\x01\n" +
+	"\x13TransportDescriptor\x12\x1c\n" +
+	"\x04name\x18\x01 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x01R\x04name\x12\x1c\n" +
+	"\x04kind\x18\x02 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x01R\x04kind\x12\x1c\n" +
+	"\x04mode\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x01R\x04mode\x12/\n" +
+	"\x06config\x18\x04 \x01(\v2\x17.google.protobuf.StructR\x06config\"\xbc\x04\n" +
 	"\x0ePublishRequest\x120\n" +
 	"\x05audio\x18\x01 \x01(\v2\x18.transport.v1.AudioFrameH\x00R\x05audio\x120\n" +
 	"\x05video\x18\x02 \x01(\v2\x18.transport.v1.VideoFrameH\x00R\x05video\x123\n" +
-	"\x06binary\x18\x03 \x01(\v2\x19.transport.v1.BinaryFrameH\x00R\x06binary\x12F\n" +
-	"\bmetadata\x18\x04 \x03(\v2*.transport.v1.PublishRequest.MetadataEntryR\bmetadata\x121\n" +
+	"\x06binary\x18\x03 \x01(\v2\x19.transport.v1.BinaryFrameH\x00R\x06binary\x12`\n" +
+	"\bmetadata\x18\x04 \x03(\v2*.transport.v1.PublishRequest.MetadataEntryB\x18\xbaH\x15\x9a\x01\x12\x10d\"\ar\x05\x10\x01\x18\x80\x01*\x05r\x03\x18\x80\bR\bmetadata\x121\n" +
 	"\apayload\x18\x05 \x01(\v2\x17.google.protobuf.StructR\apayload\x12/\n" +
-	"\x06inputs\x18\x06 \x01(\v2\x17.google.protobuf.StructR\x06inputs\x12A\n" +
+	"\x06inputs\x18\x06 \x01(\v2\x17.google.protobuf.StructR\x06inputs\x12K\n" +
 	"\n" +
-	"transports\x18\a \x03(\v2!.transport.v1.TransportDescriptorR\n" +
+	"transports\x18\a \x03(\v2!.transport.v1.TransportDescriptorB\b\xbaH\x05\x92\x01\x02\x10\n" +
+	"R\n" +
 	"transports\x128\n" +
 	"\benvelope\x18\b \x01(\v2\x1c.transport.v1.StreamEnvelopeR\benvelope\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\a\n" +
-	"\x05frame\"\x9e\x02\n" +
+	"\x05frame\"\xc2\x02\n" +
 	"\x0eControlRequest\x123\n" +
-	"\x06action\x18\x01 \x01(\x0e2\x1b.transport.v1.ControlActionR\x06action\x12F\n" +
-	"\bmetadata\x18\x02 \x03(\v2*.transport.v1.ControlRequest.MetadataEntryR\bmetadata\x12-\n" +
-	"\x04flow\x18\x03 \x01(\v2\x19.transport.v1.FlowControlR\x04flow\x12#\n" +
-	"\rcustom_action\x18\x04 \x01(\tR\fcustomAction\x1a;\n" +
+	"\x06action\x18\x01 \x01(\x0e2\x1b.transport.v1.ControlActionR\x06action\x12`\n" +
+	"\bmetadata\x18\x02 \x03(\v2*.transport.v1.ControlRequest.MetadataEntryB\x18\xbaH\x15\x9a\x01\x12\x10d\"\ar\x05\x10\x01\x18\x80\x01*\x05r\x03\x18\x80\bR\bmetadata\x12-\n" +
+	"\x04flow\x18\x03 \x01(\v2\x19.transport.v1.FlowControlR\x04flow\x12-\n" +
+	"\rcustom_action\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x01R\fcustomAction\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xa0\x02\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xe8\x01\n" +
+	"\fControlError\x12\x1b\n" +
+	"\x04code\x18\x01 \x01(\x05B\a\xbaH\x04\x1a\x02(\x00R\x04code\x12\"\n" +
+	"\amessage\x18\x02 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x10R\amessage\x12[\n" +
+	"\adetails\x18\x03 \x03(\v2'.transport.v1.ControlError.DetailsEntryB\x18\xbaH\x15\x9a\x01\x12\x102\"\ar\x05\x10\x01\x18\x80\x01*\x05r\x03\x18\x80\bR\adetails\x1a:\n" +
+	"\fDetailsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xf6\x02\n" +
 	"\x0fControlResponse\x123\n" +
-	"\x06action\x18\x01 \x01(\x0e2\x1b.transport.v1.ControlActionR\x06action\x12G\n" +
-	"\bmetadata\x18\x02 \x03(\v2+.transport.v1.ControlResponse.MetadataEntryR\bmetadata\x12-\n" +
-	"\x04flow\x18\x03 \x01(\v2\x19.transport.v1.FlowControlR\x04flow\x12#\n" +
-	"\rcustom_action\x18\x04 \x01(\tR\fcustomAction\x1a;\n" +
+	"\x06action\x18\x01 \x01(\x0e2\x1b.transport.v1.ControlActionR\x06action\x12a\n" +
+	"\bmetadata\x18\x02 \x03(\v2+.transport.v1.ControlResponse.MetadataEntryB\x18\xbaH\x15\x9a\x01\x12\x10d\"\ar\x05\x10\x01\x18\x80\x01*\x05r\x03\x18\x80\bR\bmetadata\x12-\n" +
+	"\x04flow\x18\x03 \x01(\v2\x19.transport.v1.FlowControlR\x04flow\x12-\n" +
+	"\rcustom_action\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x01R\fcustomAction\x120\n" +
+	"\x05error\x18\x05 \x01(\v2\x1a.transport.v1.ControlErrorR\x05error\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\">\n" +
-	"\fPartitionAck\x12\x1c\n" +
-	"\tpartition\x18\x01 \x01(\tR\tpartition\x12\x10\n" +
-	"\x03ack\x18\x02 \x01(\x04R\x03ack\"\xf7\x01\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"H\n" +
+	"\fPartitionAck\x12&\n" +
+	"\tpartition\x18\x01 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x01R\tpartition\x12\x10\n" +
+	"\x03ack\x18\x02 \x01(\x04R\x03ack\"\x82\x02\n" +
 	"\vFlowControl\x12\x10\n" +
 	"\x03ack\x18\x01 \x01(\x04R\x03ack\x12)\n" +
 	"\x10credits_messages\x18\x02 \x01(\rR\x0fcreditsMessages\x12#\n" +
-	"\rcredits_bytes\x18\x03 \x01(\rR\fcreditsBytes\x12A\n" +
-	"\x0epartition_acks\x18\x06 \x03(\v2\x1a.transport.v1.PartitionAckR\rpartitionAcks\x127\n" +
-	"\x06signal\x18\a \x01(\x0e2\x1f.transport.v1.FlowControlSignalR\x06signalJ\x04\b\x04\x10\x05J\x04\b\x05\x10\x06\"\x86\x02\n" +
-	"\x0eStreamEnvelope\x12\x1b\n" +
-	"\tstream_id\x18\x01 \x01(\tR\bstreamId\x12\x1a\n" +
-	"\bsequence\x18\x02 \x01(\x04R\bsequence\x12\x1c\n" +
-	"\tpartition\x18\x03 \x01(\tR\tpartition\x12\x19\n" +
-	"\bchunk_id\x18\x04 \x01(\tR\achunkId\x12\x1f\n" +
+	"\rcredits_bytes\x18\x03 \x01(\rR\fcreditsBytes\x12L\n" +
+	"\x0epartition_acks\x18\x06 \x03(\v2\x1a.transport.v1.PartitionAckB\t\xbaH\x06\x92\x01\x03\x10\x80\x02R\rpartitionAcks\x127\n" +
+	"\x06signal\x18\a \x01(\x0e2\x1f.transport.v1.FlowControlSignalR\x06signalJ\x04\b\x04\x10\x05J\x04\b\x05\x10\x06\"\xfc\a\n" +
+	"\x0eStreamEnvelope\x12%\n" +
+	"\tstream_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x01R\bstreamId\x12\x1a\n" +
+	"\bsequence\x18\x02 \x01(\x04R\bsequence\x12&\n" +
+	"\tpartition\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x01R\tpartition\x12#\n" +
+	"\bchunk_id\x18\x04 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x01R\achunkId\x12\x1f\n" +
 	"\vchunk_index\x18\x05 \x01(\rR\n" +
-	"chunkIndex\x12\x1f\n" +
-	"\vchunk_count\x18\x06 \x01(\rR\n" +
-	"chunkCount\x12\x1f\n" +
-	"\vchunk_bytes\x18\a \x01(\rR\n" +
-	"chunkBytes\x12\x1f\n" +
-	"\vtotal_bytes\x18\b \x01(\rR\n" +
-	"totalBytes\"\x94\x02\n" +
-	"\vBindingInfo\x12#\n" +
-	"\rtransport_ref\x18\x01 \x01(\tR\ftransportRef\x12\x16\n" +
-	"\x06driver\x18\x02 \x01(\tR\x06driver\x12\x1a\n" +
-	"\bendpoint\x18\x03 \x01(\tR\bendpoint\x12!\n" +
-	"\faudio_codecs\x18\x04 \x03(\tR\vaudioCodecs\x12!\n" +
-	"\fvideo_codecs\x18\x05 \x03(\tR\vvideoCodecs\x12\x18\n" +
-	"\apayload\x18\x06 \x01(\fR\apayload\x12!\n" +
-	"\fbinary_types\x18\a \x03(\tR\vbinaryTypes\x12)\n" +
-	"\x10protocol_version\x18\b \x01(\tR\x0fprotocolVersion\"\x92\x04\n" +
+	"chunkIndex\x12)\n" +
+	"\vchunk_count\x18\x06 \x01(\rB\b\xbaH\x05*\x03\x18\x80\x02R\n" +
+	"chunkCount\x12+\n" +
+	"\vchunk_bytes\x18\a \x01(\rB\n" +
+	"\xbaH\a*\x05\x18\x80\x80\x80\x05R\n" +
+	"chunkBytes\x12+\n" +
+	"\vtotal_bytes\x18\b \x01(\rB\n" +
+	"\xbaH\a*\x05\x18\x80\x80\x80 R\n" +
+	"totalBytes:\xb3\x05\xbaH\xaf\x05\x1a\xe3\x01\n" +
+	"-stream_envelope.no_chunk_fields_without_count\x123chunk fields must be unset when chunk_count is zero\x1a}this.chunk_count != 0u || (this.chunk_index == 0u && this.chunk_bytes == 0u && this.total_bytes == 0u && this.chunk_id == '')\x1a\x93\x01\n" +
+	"!stream_envelope.chunk_id_required\x12:chunk_id is required when chunk_count is greater than zero\x1a2this.chunk_count == 0u || this.chunk_id.size() > 0\x1a\x96\x01\n" +
+	"\"stream_envelope.stream_id_required\x12;stream_id is required when chunk_count is greater than zero\x1a3this.chunk_count == 0u || this.stream_id.size() > 0\x1a\x97\x01\n" +
+	"+stream_envelope.chunk_index_less_than_count\x12)chunk_index must be less than chunk_count\x1a=this.chunk_count == 0u || this.chunk_index < this.chunk_count\"\xf8\x02\n" +
+	"\vBindingInfo\x12-\n" +
+	"\rtransport_ref\x18\x01 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x01R\ftransportRef\x12 \n" +
+	"\x06driver\x18\x02 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x01R\x06driver\x12$\n" +
+	"\bendpoint\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x10R\bendpoint\x121\n" +
+	"\faudio_codecs\x18\x04 \x03(\tB\x0e\xbaH\v\x92\x01\b\x10 \"\x04r\x02\x18@R\vaudioCodecs\x121\n" +
+	"\fvideo_codecs\x18\x05 \x03(\tB\x0e\xbaH\v\x92\x01\b\x10 \"\x04r\x02\x18@R\vvideoCodecs\x12#\n" +
+	"\apayload\x18\x06 \x01(\fB\t\xbaH\x06z\x04\x18\x80\x80@R\apayload\x122\n" +
+	"\fbinary_types\x18\a \x03(\tB\x0f\xbaH\f\x92\x01\t\x10 \"\x05r\x03\x18\xff\x01R\vbinaryTypes\x123\n" +
+	"\x10protocol_version\x18\b \x01(\tB\b\xbaH\x05r\x03\x18\x80\x01R\x0fprotocolVersion\"\xb6\x04\n" +
 	"\vDataRequest\x120\n" +
 	"\x05audio\x18\x01 \x01(\v2\x18.transport.v1.AudioFrameH\x00R\x05audio\x120\n" +
 	"\x05video\x18\x02 \x01(\v2\x18.transport.v1.VideoFrameH\x00R\x05video\x123\n" +
-	"\x06binary\x18\x03 \x01(\v2\x19.transport.v1.BinaryFrameH\x00R\x06binary\x12C\n" +
-	"\bmetadata\x18\x04 \x03(\v2'.transport.v1.DataRequest.MetadataEntryR\bmetadata\x121\n" +
+	"\x06binary\x18\x03 \x01(\v2\x19.transport.v1.BinaryFrameH\x00R\x06binary\x12]\n" +
+	"\bmetadata\x18\x04 \x03(\v2'.transport.v1.DataRequest.MetadataEntryB\x18\xbaH\x15\x9a\x01\x12\x10d\"\ar\x05\x10\x01\x18\x80\x01*\x05r\x03\x18\x80\bR\bmetadata\x121\n" +
 	"\apayload\x18\x05 \x01(\v2\x17.google.protobuf.StructR\apayload\x12/\n" +
-	"\x06inputs\x18\x06 \x01(\v2\x17.google.protobuf.StructR\x06inputs\x12A\n" +
+	"\x06inputs\x18\x06 \x01(\v2\x17.google.protobuf.StructR\x06inputs\x12K\n" +
 	"\n" +
-	"transports\x18\a \x03(\v2!.transport.v1.TransportDescriptorR\n" +
+	"transports\x18\a \x03(\v2!.transport.v1.TransportDescriptorB\b\xbaH\x05\x92\x01\x02\x10\n" +
+	"R\n" +
 	"transports\x128\n" +
 	"\benvelope\x18\b \x01(\v2\x1c.transport.v1.StreamEnvelopeR\benvelope\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\a\n" +
-	"\x05frame\"\x94\x04\n" +
+	"\x05frame\"\xb8\x04\n" +
 	"\fDataResponse\x120\n" +
 	"\x05audio\x18\x01 \x01(\v2\x18.transport.v1.AudioFrameH\x00R\x05audio\x120\n" +
 	"\x05video\x18\x02 \x01(\v2\x18.transport.v1.VideoFrameH\x00R\x05video\x123\n" +
-	"\x06binary\x18\x03 \x01(\v2\x19.transport.v1.BinaryFrameH\x00R\x06binary\x12D\n" +
-	"\bmetadata\x18\x04 \x03(\v2(.transport.v1.DataResponse.MetadataEntryR\bmetadata\x121\n" +
+	"\x06binary\x18\x03 \x01(\v2\x19.transport.v1.BinaryFrameH\x00R\x06binary\x12^\n" +
+	"\bmetadata\x18\x04 \x03(\v2(.transport.v1.DataResponse.MetadataEntryB\x18\xbaH\x15\x9a\x01\x12\x10d\"\ar\x05\x10\x01\x18\x80\x01*\x05r\x03\x18\x80\bR\bmetadata\x121\n" +
 	"\apayload\x18\x05 \x01(\v2\x17.google.protobuf.StructR\apayload\x12/\n" +
-	"\x06inputs\x18\x06 \x01(\v2\x17.google.protobuf.StructR\x06inputs\x12A\n" +
+	"\x06inputs\x18\x06 \x01(\v2\x17.google.protobuf.StructR\x06inputs\x12K\n" +
 	"\n" +
-	"transports\x18\a \x03(\v2!.transport.v1.TransportDescriptorR\n" +
+	"transports\x18\a \x03(\v2!.transport.v1.TransportDescriptorB\b\xbaH\x05\x92\x01\x02\x10\n" +
+	"R\n" +
 	"transports\x128\n" +
 	"\benvelope\x18\b \x01(\v2\x1c.transport.v1.StreamEnvelopeR\benvelope\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\a\n" +
-	"\x05frame\"\x98\x04\n" +
-	"\x0eHubPushRequest\x12F\n" +
-	"\bmetadata\x18\x01 \x03(\v2*.transport.v1.HubPushRequest.MetadataEntryR\bmetadata\x121\n" +
+	"\x05frame\"\xbc\x04\n" +
+	"\x0eHubPushRequest\x12`\n" +
+	"\bmetadata\x18\x01 \x03(\v2*.transport.v1.HubPushRequest.MetadataEntryB\x18\xbaH\x15\x9a\x01\x12\x10d\"\ar\x05\x10\x01\x18\x80\x01*\x05r\x03\x18\x80\bR\bmetadata\x121\n" +
 	"\apayload\x18\x02 \x01(\v2\x17.google.protobuf.StructR\apayload\x12/\n" +
 	"\x06inputs\x18\x03 \x01(\v2\x17.google.protobuf.StructR\x06inputs\x120\n" +
 	"\x05audio\x18\x04 \x01(\v2\x18.transport.v1.AudioFrameH\x00R\x05audio\x120\n" +
 	"\x05video\x18\x05 \x01(\v2\x18.transport.v1.VideoFrameH\x00R\x05video\x123\n" +
-	"\x06binary\x18\x06 \x01(\v2\x19.transport.v1.BinaryFrameH\x00R\x06binary\x12A\n" +
+	"\x06binary\x18\x06 \x01(\v2\x19.transport.v1.BinaryFrameH\x00R\x06binary\x12K\n" +
 	"\n" +
-	"transports\x18\a \x03(\v2!.transport.v1.TransportDescriptorR\n" +
+	"transports\x18\a \x03(\v2!.transport.v1.TransportDescriptorB\b\xbaH\x05\x92\x01\x02\x10\n" +
+	"R\n" +
 	"transports\x128\n" +
 	"\benvelope\x18\b \x01(\v2\x1c.transport.v1.StreamEnvelopeR\benvelope\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B\a\n" +
-	"\x05frame\"\x9a\x04\n" +
-	"\x0fHubPushResponse\x12G\n" +
-	"\bmetadata\x18\x01 \x03(\v2+.transport.v1.HubPushResponse.MetadataEntryR\bmetadata\x121\n" +
+	"\x05frame\"\xbe\x04\n" +
+	"\x0fHubPushResponse\x12a\n" +
+	"\bmetadata\x18\x01 \x03(\v2+.transport.v1.HubPushResponse.MetadataEntryB\x18\xbaH\x15\x9a\x01\x12\x10d\"\ar\x05\x10\x01\x18\x80\x01*\x05r\x03\x18\x80\bR\bmetadata\x121\n" +
 	"\apayload\x18\x02 \x01(\v2\x17.google.protobuf.StructR\apayload\x12/\n" +
-	"\x06inputs\x18\x03 \x01(\v2\x17.google.protobuf.StructR\x06inputs\x12A\n" +
+	"\x06inputs\x18\x03 \x01(\v2\x17.google.protobuf.StructR\x06inputs\x12K\n" +
 	"\n" +
-	"transports\x18\x04 \x03(\v2!.transport.v1.TransportDescriptorR\n" +
+	"transports\x18\x04 \x03(\v2!.transport.v1.TransportDescriptorB\b\xbaH\x05\x92\x01\x02\x10\n" +
+	"R\n" +
 	"transports\x120\n" +
 	"\x05audio\x18\x05 \x01(\v2\x18.transport.v1.AudioFrameH\x00R\x05audio\x120\n" +
 	"\x05video\x18\x06 \x01(\v2\x18.transport.v1.VideoFrameH\x00R\x05video\x123\n" +
@@ -1897,7 +2096,25 @@ const file_transport_v1_transport_proto_rawDesc = "" +
 	"\x11FlowControlSignal\x12#\n" +
 	"\x1fFLOW_CONTROL_SIGNAL_UNSPECIFIED\x10\x00\x12\x1d\n" +
 	"\x19FLOW_CONTROL_SIGNAL_PAUSE\x10\x01\x12\x1e\n" +
-	"\x1aFLOW_CONTROL_SIGNAL_RESUME\x10\x022\xf6\x01\n" +
+	"\x1aFLOW_CONTROL_SIGNAL_RESUME\x10\x02*\x8b\x04\n" +
+	"\n" +
+	"StreamType\x12\x1b\n" +
+	"\x17STREAM_TYPE_UNSPECIFIED\x10\x00\x12!\n" +
+	"\x1dSTREAM_TYPE_SPEECH_TRANSCRIPT\x10\x01\x12\"\n" +
+	"\x1eSTREAM_TYPE_SPEECH_TRANSLATION\x10\x02\x12'\n" +
+	"#STREAM_TYPE_SPEECH_TRANSCRIPT_DELTA\x10\x03\x12&\n" +
+	"\"STREAM_TYPE_SPEECH_TRANSCRIPT_DONE\x10\x04\x12!\n" +
+	"\x1dSTREAM_TYPE_SPEECH_VAD_ACTIVE\x10\x05\x12#\n" +
+	"\x1fSTREAM_TYPE_SPEECH_VAD_INACTIVE\x10\x06\x12\x1c\n" +
+	"\x18STREAM_TYPE_SPEECH_AUDIO\x10\a\x12\"\n" +
+	"\x1eSTREAM_TYPE_SPEECH_AUDIO_DELTA\x10\b\x12!\n" +
+	"\x1dSTREAM_TYPE_SPEECH_AUDIO_DONE\x10\t\x12$\n" +
+	" STREAM_TYPE_SPEECH_AUDIO_SUMMARY\x10\n" +
+	"\x12\x1b\n" +
+	"\x17STREAM_TYPE_SPEECH_TURN\x10\v\x12\x1c\n" +
+	"\x18STREAM_TYPE_CHAT_MESSAGE\x10\f\x12\x1d\n" +
+	"\x19STREAM_TYPE_CHAT_RESPONSE\x10\r\x12\x1b\n" +
+	"\x17STREAM_TYPE_OPENAI_CHAT\x10\x0e2\xf6\x01\n" +
 	"\x19TransportConnectorService\x12A\n" +
 	"\x04Data\x12\x19.transport.v1.DataRequest\x1a\x1a.transport.v1.DataResponse(\x010\x01\x12J\n" +
 	"\aControl\x12\x1c.transport.v1.ControlRequest\x1a\x1d.transport.v1.ControlResponse(\x010\x01\x12J\n" +
@@ -1915,96 +2132,101 @@ func file_transport_v1_transport_proto_rawDescGZIP() []byte {
 	return file_transport_v1_transport_proto_rawDescData
 }
 
-var file_transport_v1_transport_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_transport_v1_transport_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
+var file_transport_v1_transport_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_transport_v1_transport_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_transport_v1_transport_proto_goTypes = []any{
 	(ControlAction)(0),          // 0: transport.v1.ControlAction
 	(FlowControlSignal)(0),      // 1: transport.v1.FlowControlSignal
-	(*AudioFrame)(nil),          // 2: transport.v1.AudioFrame
-	(*VideoFrame)(nil),          // 3: transport.v1.VideoFrame
-	(*BinaryFrame)(nil),         // 4: transport.v1.BinaryFrame
-	(*TransportDescriptor)(nil), // 5: transport.v1.TransportDescriptor
-	(*PublishRequest)(nil),      // 6: transport.v1.PublishRequest
-	(*ControlRequest)(nil),      // 7: transport.v1.ControlRequest
-	(*ControlResponse)(nil),     // 8: transport.v1.ControlResponse
-	(*PartitionAck)(nil),        // 9: transport.v1.PartitionAck
-	(*FlowControl)(nil),         // 10: transport.v1.FlowControl
-	(*StreamEnvelope)(nil),      // 11: transport.v1.StreamEnvelope
-	(*BindingInfo)(nil),         // 12: transport.v1.BindingInfo
-	(*DataRequest)(nil),         // 13: transport.v1.DataRequest
-	(*DataResponse)(nil),        // 14: transport.v1.DataResponse
-	(*HubPushRequest)(nil),      // 15: transport.v1.HubPushRequest
-	(*HubPushResponse)(nil),     // 16: transport.v1.HubPushResponse
-	nil,                         // 17: transport.v1.PublishRequest.MetadataEntry
-	nil,                         // 18: transport.v1.ControlRequest.MetadataEntry
-	nil,                         // 19: transport.v1.ControlResponse.MetadataEntry
-	nil,                         // 20: transport.v1.DataRequest.MetadataEntry
-	nil,                         // 21: transport.v1.DataResponse.MetadataEntry
-	nil,                         // 22: transport.v1.HubPushRequest.MetadataEntry
-	nil,                         // 23: transport.v1.HubPushResponse.MetadataEntry
-	(*structpb.Struct)(nil),     // 24: google.protobuf.Struct
+	(StreamType)(0),             // 2: transport.v1.StreamType
+	(*AudioFrame)(nil),          // 3: transport.v1.AudioFrame
+	(*VideoFrame)(nil),          // 4: transport.v1.VideoFrame
+	(*BinaryFrame)(nil),         // 5: transport.v1.BinaryFrame
+	(*TransportDescriptor)(nil), // 6: transport.v1.TransportDescriptor
+	(*PublishRequest)(nil),      // 7: transport.v1.PublishRequest
+	(*ControlRequest)(nil),      // 8: transport.v1.ControlRequest
+	(*ControlError)(nil),        // 9: transport.v1.ControlError
+	(*ControlResponse)(nil),     // 10: transport.v1.ControlResponse
+	(*PartitionAck)(nil),        // 11: transport.v1.PartitionAck
+	(*FlowControl)(nil),         // 12: transport.v1.FlowControl
+	(*StreamEnvelope)(nil),      // 13: transport.v1.StreamEnvelope
+	(*BindingInfo)(nil),         // 14: transport.v1.BindingInfo
+	(*DataRequest)(nil),         // 15: transport.v1.DataRequest
+	(*DataResponse)(nil),        // 16: transport.v1.DataResponse
+	(*HubPushRequest)(nil),      // 17: transport.v1.HubPushRequest
+	(*HubPushResponse)(nil),     // 18: transport.v1.HubPushResponse
+	nil,                         // 19: transport.v1.PublishRequest.MetadataEntry
+	nil,                         // 20: transport.v1.ControlRequest.MetadataEntry
+	nil,                         // 21: transport.v1.ControlError.DetailsEntry
+	nil,                         // 22: transport.v1.ControlResponse.MetadataEntry
+	nil,                         // 23: transport.v1.DataRequest.MetadataEntry
+	nil,                         // 24: transport.v1.DataResponse.MetadataEntry
+	nil,                         // 25: transport.v1.HubPushRequest.MetadataEntry
+	nil,                         // 26: transport.v1.HubPushResponse.MetadataEntry
+	(*structpb.Struct)(nil),     // 27: google.protobuf.Struct
 }
 var file_transport_v1_transport_proto_depIdxs = []int32{
-	24, // 0: transport.v1.TransportDescriptor.config:type_name -> google.protobuf.Struct
-	2,  // 1: transport.v1.PublishRequest.audio:type_name -> transport.v1.AudioFrame
-	3,  // 2: transport.v1.PublishRequest.video:type_name -> transport.v1.VideoFrame
-	4,  // 3: transport.v1.PublishRequest.binary:type_name -> transport.v1.BinaryFrame
-	17, // 4: transport.v1.PublishRequest.metadata:type_name -> transport.v1.PublishRequest.MetadataEntry
-	24, // 5: transport.v1.PublishRequest.payload:type_name -> google.protobuf.Struct
-	24, // 6: transport.v1.PublishRequest.inputs:type_name -> google.protobuf.Struct
-	5,  // 7: transport.v1.PublishRequest.transports:type_name -> transport.v1.TransportDescriptor
-	11, // 8: transport.v1.PublishRequest.envelope:type_name -> transport.v1.StreamEnvelope
+	27, // 0: transport.v1.TransportDescriptor.config:type_name -> google.protobuf.Struct
+	3,  // 1: transport.v1.PublishRequest.audio:type_name -> transport.v1.AudioFrame
+	4,  // 2: transport.v1.PublishRequest.video:type_name -> transport.v1.VideoFrame
+	5,  // 3: transport.v1.PublishRequest.binary:type_name -> transport.v1.BinaryFrame
+	19, // 4: transport.v1.PublishRequest.metadata:type_name -> transport.v1.PublishRequest.MetadataEntry
+	27, // 5: transport.v1.PublishRequest.payload:type_name -> google.protobuf.Struct
+	27, // 6: transport.v1.PublishRequest.inputs:type_name -> google.protobuf.Struct
+	6,  // 7: transport.v1.PublishRequest.transports:type_name -> transport.v1.TransportDescriptor
+	13, // 8: transport.v1.PublishRequest.envelope:type_name -> transport.v1.StreamEnvelope
 	0,  // 9: transport.v1.ControlRequest.action:type_name -> transport.v1.ControlAction
-	18, // 10: transport.v1.ControlRequest.metadata:type_name -> transport.v1.ControlRequest.MetadataEntry
-	10, // 11: transport.v1.ControlRequest.flow:type_name -> transport.v1.FlowControl
-	0,  // 12: transport.v1.ControlResponse.action:type_name -> transport.v1.ControlAction
-	19, // 13: transport.v1.ControlResponse.metadata:type_name -> transport.v1.ControlResponse.MetadataEntry
-	10, // 14: transport.v1.ControlResponse.flow:type_name -> transport.v1.FlowControl
-	9,  // 15: transport.v1.FlowControl.partition_acks:type_name -> transport.v1.PartitionAck
-	1,  // 16: transport.v1.FlowControl.signal:type_name -> transport.v1.FlowControlSignal
-	2,  // 17: transport.v1.DataRequest.audio:type_name -> transport.v1.AudioFrame
-	3,  // 18: transport.v1.DataRequest.video:type_name -> transport.v1.VideoFrame
-	4,  // 19: transport.v1.DataRequest.binary:type_name -> transport.v1.BinaryFrame
-	20, // 20: transport.v1.DataRequest.metadata:type_name -> transport.v1.DataRequest.MetadataEntry
-	24, // 21: transport.v1.DataRequest.payload:type_name -> google.protobuf.Struct
-	24, // 22: transport.v1.DataRequest.inputs:type_name -> google.protobuf.Struct
-	5,  // 23: transport.v1.DataRequest.transports:type_name -> transport.v1.TransportDescriptor
-	11, // 24: transport.v1.DataRequest.envelope:type_name -> transport.v1.StreamEnvelope
-	2,  // 25: transport.v1.DataResponse.audio:type_name -> transport.v1.AudioFrame
-	3,  // 26: transport.v1.DataResponse.video:type_name -> transport.v1.VideoFrame
-	4,  // 27: transport.v1.DataResponse.binary:type_name -> transport.v1.BinaryFrame
-	21, // 28: transport.v1.DataResponse.metadata:type_name -> transport.v1.DataResponse.MetadataEntry
-	24, // 29: transport.v1.DataResponse.payload:type_name -> google.protobuf.Struct
-	24, // 30: transport.v1.DataResponse.inputs:type_name -> google.protobuf.Struct
-	5,  // 31: transport.v1.DataResponse.transports:type_name -> transport.v1.TransportDescriptor
-	11, // 32: transport.v1.DataResponse.envelope:type_name -> transport.v1.StreamEnvelope
-	22, // 33: transport.v1.HubPushRequest.metadata:type_name -> transport.v1.HubPushRequest.MetadataEntry
-	24, // 34: transport.v1.HubPushRequest.payload:type_name -> google.protobuf.Struct
-	24, // 35: transport.v1.HubPushRequest.inputs:type_name -> google.protobuf.Struct
-	2,  // 36: transport.v1.HubPushRequest.audio:type_name -> transport.v1.AudioFrame
-	3,  // 37: transport.v1.HubPushRequest.video:type_name -> transport.v1.VideoFrame
-	4,  // 38: transport.v1.HubPushRequest.binary:type_name -> transport.v1.BinaryFrame
-	5,  // 39: transport.v1.HubPushRequest.transports:type_name -> transport.v1.TransportDescriptor
-	11, // 40: transport.v1.HubPushRequest.envelope:type_name -> transport.v1.StreamEnvelope
-	23, // 41: transport.v1.HubPushResponse.metadata:type_name -> transport.v1.HubPushResponse.MetadataEntry
-	24, // 42: transport.v1.HubPushResponse.payload:type_name -> google.protobuf.Struct
-	24, // 43: transport.v1.HubPushResponse.inputs:type_name -> google.protobuf.Struct
-	5,  // 44: transport.v1.HubPushResponse.transports:type_name -> transport.v1.TransportDescriptor
-	2,  // 45: transport.v1.HubPushResponse.audio:type_name -> transport.v1.AudioFrame
-	3,  // 46: transport.v1.HubPushResponse.video:type_name -> transport.v1.VideoFrame
-	4,  // 47: transport.v1.HubPushResponse.binary:type_name -> transport.v1.BinaryFrame
-	11, // 48: transport.v1.HubPushResponse.envelope:type_name -> transport.v1.StreamEnvelope
-	13, // 49: transport.v1.TransportConnectorService.Data:input_type -> transport.v1.DataRequest
-	7,  // 50: transport.v1.TransportConnectorService.Control:input_type -> transport.v1.ControlRequest
-	15, // 51: transport.v1.TransportConnectorService.HubPush:input_type -> transport.v1.HubPushRequest
-	14, // 52: transport.v1.TransportConnectorService.Data:output_type -> transport.v1.DataResponse
-	8,  // 53: transport.v1.TransportConnectorService.Control:output_type -> transport.v1.ControlResponse
-	16, // 54: transport.v1.TransportConnectorService.HubPush:output_type -> transport.v1.HubPushResponse
-	52, // [52:55] is the sub-list for method output_type
-	49, // [49:52] is the sub-list for method input_type
-	49, // [49:49] is the sub-list for extension type_name
-	49, // [49:49] is the sub-list for extension extendee
-	0,  // [0:49] is the sub-list for field type_name
+	20, // 10: transport.v1.ControlRequest.metadata:type_name -> transport.v1.ControlRequest.MetadataEntry
+	12, // 11: transport.v1.ControlRequest.flow:type_name -> transport.v1.FlowControl
+	21, // 12: transport.v1.ControlError.details:type_name -> transport.v1.ControlError.DetailsEntry
+	0,  // 13: transport.v1.ControlResponse.action:type_name -> transport.v1.ControlAction
+	22, // 14: transport.v1.ControlResponse.metadata:type_name -> transport.v1.ControlResponse.MetadataEntry
+	12, // 15: transport.v1.ControlResponse.flow:type_name -> transport.v1.FlowControl
+	9,  // 16: transport.v1.ControlResponse.error:type_name -> transport.v1.ControlError
+	11, // 17: transport.v1.FlowControl.partition_acks:type_name -> transport.v1.PartitionAck
+	1,  // 18: transport.v1.FlowControl.signal:type_name -> transport.v1.FlowControlSignal
+	3,  // 19: transport.v1.DataRequest.audio:type_name -> transport.v1.AudioFrame
+	4,  // 20: transport.v1.DataRequest.video:type_name -> transport.v1.VideoFrame
+	5,  // 21: transport.v1.DataRequest.binary:type_name -> transport.v1.BinaryFrame
+	23, // 22: transport.v1.DataRequest.metadata:type_name -> transport.v1.DataRequest.MetadataEntry
+	27, // 23: transport.v1.DataRequest.payload:type_name -> google.protobuf.Struct
+	27, // 24: transport.v1.DataRequest.inputs:type_name -> google.protobuf.Struct
+	6,  // 25: transport.v1.DataRequest.transports:type_name -> transport.v1.TransportDescriptor
+	13, // 26: transport.v1.DataRequest.envelope:type_name -> transport.v1.StreamEnvelope
+	3,  // 27: transport.v1.DataResponse.audio:type_name -> transport.v1.AudioFrame
+	4,  // 28: transport.v1.DataResponse.video:type_name -> transport.v1.VideoFrame
+	5,  // 29: transport.v1.DataResponse.binary:type_name -> transport.v1.BinaryFrame
+	24, // 30: transport.v1.DataResponse.metadata:type_name -> transport.v1.DataResponse.MetadataEntry
+	27, // 31: transport.v1.DataResponse.payload:type_name -> google.protobuf.Struct
+	27, // 32: transport.v1.DataResponse.inputs:type_name -> google.protobuf.Struct
+	6,  // 33: transport.v1.DataResponse.transports:type_name -> transport.v1.TransportDescriptor
+	13, // 34: transport.v1.DataResponse.envelope:type_name -> transport.v1.StreamEnvelope
+	25, // 35: transport.v1.HubPushRequest.metadata:type_name -> transport.v1.HubPushRequest.MetadataEntry
+	27, // 36: transport.v1.HubPushRequest.payload:type_name -> google.protobuf.Struct
+	27, // 37: transport.v1.HubPushRequest.inputs:type_name -> google.protobuf.Struct
+	3,  // 38: transport.v1.HubPushRequest.audio:type_name -> transport.v1.AudioFrame
+	4,  // 39: transport.v1.HubPushRequest.video:type_name -> transport.v1.VideoFrame
+	5,  // 40: transport.v1.HubPushRequest.binary:type_name -> transport.v1.BinaryFrame
+	6,  // 41: transport.v1.HubPushRequest.transports:type_name -> transport.v1.TransportDescriptor
+	13, // 42: transport.v1.HubPushRequest.envelope:type_name -> transport.v1.StreamEnvelope
+	26, // 43: transport.v1.HubPushResponse.metadata:type_name -> transport.v1.HubPushResponse.MetadataEntry
+	27, // 44: transport.v1.HubPushResponse.payload:type_name -> google.protobuf.Struct
+	27, // 45: transport.v1.HubPushResponse.inputs:type_name -> google.protobuf.Struct
+	6,  // 46: transport.v1.HubPushResponse.transports:type_name -> transport.v1.TransportDescriptor
+	3,  // 47: transport.v1.HubPushResponse.audio:type_name -> transport.v1.AudioFrame
+	4,  // 48: transport.v1.HubPushResponse.video:type_name -> transport.v1.VideoFrame
+	5,  // 49: transport.v1.HubPushResponse.binary:type_name -> transport.v1.BinaryFrame
+	13, // 50: transport.v1.HubPushResponse.envelope:type_name -> transport.v1.StreamEnvelope
+	15, // 51: transport.v1.TransportConnectorService.Data:input_type -> transport.v1.DataRequest
+	8,  // 52: transport.v1.TransportConnectorService.Control:input_type -> transport.v1.ControlRequest
+	17, // 53: transport.v1.TransportConnectorService.HubPush:input_type -> transport.v1.HubPushRequest
+	16, // 54: transport.v1.TransportConnectorService.Data:output_type -> transport.v1.DataResponse
+	10, // 55: transport.v1.TransportConnectorService.Control:output_type -> transport.v1.ControlResponse
+	18, // 56: transport.v1.TransportConnectorService.HubPush:output_type -> transport.v1.HubPushResponse
+	54, // [54:57] is the sub-list for method output_type
+	51, // [51:54] is the sub-list for method input_type
+	51, // [51:51] is the sub-list for extension type_name
+	51, // [51:51] is the sub-list for extension extendee
+	0,  // [0:51] is the sub-list for field type_name
 }
 
 func init() { file_transport_v1_transport_proto_init() }
@@ -2017,22 +2239,22 @@ func file_transport_v1_transport_proto_init() {
 		(*PublishRequest_Video)(nil),
 		(*PublishRequest_Binary)(nil),
 	}
-	file_transport_v1_transport_proto_msgTypes[11].OneofWrappers = []any{
+	file_transport_v1_transport_proto_msgTypes[12].OneofWrappers = []any{
 		(*DataRequest_Audio)(nil),
 		(*DataRequest_Video)(nil),
 		(*DataRequest_Binary)(nil),
 	}
-	file_transport_v1_transport_proto_msgTypes[12].OneofWrappers = []any{
+	file_transport_v1_transport_proto_msgTypes[13].OneofWrappers = []any{
 		(*DataResponse_Audio)(nil),
 		(*DataResponse_Video)(nil),
 		(*DataResponse_Binary)(nil),
 	}
-	file_transport_v1_transport_proto_msgTypes[13].OneofWrappers = []any{
+	file_transport_v1_transport_proto_msgTypes[14].OneofWrappers = []any{
 		(*HubPushRequest_Audio)(nil),
 		(*HubPushRequest_Video)(nil),
 		(*HubPushRequest_Binary)(nil),
 	}
-	file_transport_v1_transport_proto_msgTypes[14].OneofWrappers = []any{
+	file_transport_v1_transport_proto_msgTypes[15].OneofWrappers = []any{
 		(*HubPushResponse_Audio)(nil),
 		(*HubPushResponse_Video)(nil),
 		(*HubPushResponse_Binary)(nil),
@@ -2042,8 +2264,8 @@ func file_transport_v1_transport_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_transport_v1_transport_proto_rawDesc), len(file_transport_v1_transport_proto_rawDesc)),
-			NumEnums:      2,
-			NumMessages:   22,
+			NumEnums:      3,
+			NumMessages:   24,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

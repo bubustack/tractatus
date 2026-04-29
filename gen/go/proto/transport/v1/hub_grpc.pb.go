@@ -27,8 +27,16 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
 // HubService routes bidirectional packet streams between runtime participants.
+// Production deployments should authenticate stream callers and bind the
+// presented identity to the claimed namespace, StoryRun, step, or connector
+// metadata before accepting packets. The protobuf contract defines message
+// shape and validation bounds; rate limiting, keepalive policy, maximum stream
+// duration, and authorization are enforced by the hub implementation.
 type HubServiceClient interface {
 	// Process is a bidirectional stream that routes DataPackets between engrams.
+	// Implementations should validate every ProcessRequest/ProcessResponse at the
+	// stream boundary and should reject traffic from stale or superseded
+	// connectors after topology cutover.
 	Process(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[ProcessRequest, ProcessResponse], error)
 }
 
@@ -58,8 +66,16 @@ type HubService_ProcessClient = grpc.BidiStreamingClient[ProcessRequest, Process
 // for forward compatibility.
 //
 // HubService routes bidirectional packet streams between runtime participants.
+// Production deployments should authenticate stream callers and bind the
+// presented identity to the claimed namespace, StoryRun, step, or connector
+// metadata before accepting packets. The protobuf contract defines message
+// shape and validation bounds; rate limiting, keepalive policy, maximum stream
+// duration, and authorization are enforced by the hub implementation.
 type HubServiceServer interface {
 	// Process is a bidirectional stream that routes DataPackets between engrams.
+	// Implementations should validate every ProcessRequest/ProcessResponse at the
+	// stream boundary and should reject traffic from stale or superseded
+	// connectors after topology cutover.
 	Process(grpc.BidiStreamingServer[ProcessRequest, ProcessResponse]) error
 	mustEmbedUnimplementedHubServiceServer()
 }
