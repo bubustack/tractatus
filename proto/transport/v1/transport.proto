@@ -112,18 +112,15 @@ message BinaryFrame {
 
 // TransportDescriptor describes a transport lane available to the current packet.
 message TransportDescriptor {
+  reserved 4;
+  reserved "config";
+
   // name is the logical transport identifier selected by the story/runtime.
   string name = 1 [(buf.validate.field).string.max_len = 128];
   // kind identifies the transport implementation or class.
   string kind = 2 [(buf.validate.field).string.max_len = 128];
   // mode identifies how the transport is used (for example, hot vs cold path).
   string mode = 3 [(buf.validate.field).string.max_len = 128];
-  // config contains transport-specific configuration surfaced to consumers.
-  // It is retained for compatibility with older producers and consumers. New
-  // consumers should prefer typed_config when present and must not use config
-  // values directly for connection, TLS, credential, or endpoint decisions
-  // without an allowlisted downstream validation step.
-  google.protobuf.Struct config = 4;
   // typed_config carries bounded runtime descriptor metadata. It intentionally
   // excludes provider connection directives such as endpoints, credentials, or
   // TLS-disable flags; those settings belong in validated operator-owned
