@@ -4,6 +4,7 @@ package transport.v1;
 
 option go_package = "github.com/bubustack/tractatus/gen/go/proto/transport/v1;transportv1";
 
+import "buf/validate/validate.proto";
 import "google/protobuf/struct.proto";
 
 // ControlAction enumerates the standard connector control-plane actions.
@@ -34,16 +35,51 @@ enum FlowControlSignal {
   FLOW_CONTROL_SIGNAL_RESUME = 2;
 }
 
+// StreamType enumerates canonical semantic event types used in packet metadata.
+// The enum provides cross-language stability for SDKs; the canonical wire names
+// remain the dot-delimited strings documented in each value comment.
+enum StreamType {
+  STREAM_TYPE_UNSPECIFIED = 0;
+  // speech.transcript.v1
+  STREAM_TYPE_SPEECH_TRANSCRIPT = 1;
+  // speech.translation.v1
+  STREAM_TYPE_SPEECH_TRANSLATION = 2;
+  // speech.transcript.delta
+  STREAM_TYPE_SPEECH_TRANSCRIPT_DELTA = 3;
+  // speech.transcript.done
+  STREAM_TYPE_SPEECH_TRANSCRIPT_DONE = 4;
+  // speech.vad.active
+  STREAM_TYPE_SPEECH_VAD_ACTIVE = 5;
+  // speech.vad.inactive
+  STREAM_TYPE_SPEECH_VAD_INACTIVE = 6;
+  // speech.audio.v1
+  STREAM_TYPE_SPEECH_AUDIO = 7;
+  // speech.audio.delta
+  STREAM_TYPE_SPEECH_AUDIO_DELTA = 8;
+  // speech.audio.done
+  STREAM_TYPE_SPEECH_AUDIO_DONE = 9;
+  // speech.audio.summary
+  STREAM_TYPE_SPEECH_AUDIO_SUMMARY = 10;
+  // speech.turn.v1
+  STREAM_TYPE_SPEECH_TURN = 11;
+  // chat.message.v1
+  STREAM_TYPE_CHAT_MESSAGE = 12;
+  // chat.response.v1
+  STREAM_TYPE_CHAT_RESPONSE = 13;
+  // openai.chat.v1
+  STREAM_TYPE_OPENAI_CHAT = 14;
+}
+
 // AudioFrame carries raw or passthrough audio bytes plus basic timing metadata.
 message AudioFrame {
   // pcm contains the audio payload bytes for this frame.
-  bytes pcm = 1;
+  bytes pcm = 1 [(buf.validate.field).bytes.max_len = 10485760];
   // sample_rate_hz is the sampling frequency associated with the payload.
-  int32 sample_rate_hz = 2;
+  int32 sample_rate_hz = 2 [(buf.validate.field).int32 = {gte: 8000, lte: 192000}];
   // channels is the number of interleaved audio channels encoded in pcm.
-  int32 channels = 3;
+  int32 channels = 3 [(buf.validate.field).int32 = {gte: 1, lte: 8}];
   // codec names the audio encoding (for example, "pcm16" or "opus").
-  string codec = 4; // e.g., "pcm16", "opus" when passthrough
+  string codec = 4 [(buf.validate.field).string.max_len = 32]; // e.g., "pcm16", "opus" when passthrough
   // timestamp_ms records when the frame was captured or should be presented.
   uint64 timestamp_ms = 5;
 }
@@ -51,13 +87,13 @@ message AudioFrame {
 // VideoFrame carries encoded or raw video bytes plus dimensional metadata.
 message VideoFrame {
   // payload contains the encoded frame bytes or raw pixel bytes when raw is true.
-  bytes payload = 1;
+  bytes payload = 1 [(buf.validate.field).bytes.max_len = 10485760];
   // codec names the video encoding (for example, "h264", "vp8", or "raw").
-  string codec = 2; // e.g., h264, vp8, raw
+  string codec = 2 [(buf.validate.field).string.max_len = 32]; // e.g., h264, vp8, raw
   // width is the frame width in pixels.
-  uint32 width = 3;
+  uint32 width = 3 [(buf.validate.field).uint32.lte = 16384];
   // height is the frame height in pixels.
-  uint32 height = 4;
+  uint32 height = 4 [(buf.validate.field).uint32.lte = 16384];
   // timestamp_ms records when the frame was captured or should be presented.
   uint64 timestamp_ms = 5;
   // raw reports whether payload contains raw pixels rather than an encoded frame.
@@ -67,9 +103,9 @@ message VideoFrame {
 // BinaryFrame carries an opaque binary payload with MIME metadata.
 message BinaryFrame {
   // payload contains the opaque frame bytes.
-  bytes payload = 1;
+  bytes payload = 1 [(buf.validate.field).bytes.max_len = 10485760];
   // mime_type describes the payload media type for downstream decoders.
-  string mime_type = 2; // e.g., application/json, application/octet-stream
+  string mime_type = 2 [(buf.validate.field).string.max_len = 255]; // e.g., application/json, application/octet-stream
   // timestamp_ms records when the frame was produced or should be processed.
   uint64 timestamp_ms = 3;
 }
@@ -77,11 +113,11 @@ message BinaryFrame {
 // TransportDescriptor describes a transport lane available to the current packet.
 message TransportDescriptor {
   // name is the logical transport identifier selected by the story/runtime.
-  string name = 1;
+  string name = 1 [(buf.validate.field).string.max_len = 128];
   // kind identifies the transport implementation or class.
-  string kind = 2;
+  string kind = 2 [(buf.validate.field).string.max_len = 128];
   // mode identifies how the transport is used (for example, hot vs cold path).
-  string mode = 3;
+  string mode = 3 [(buf.validate.field).string.max_len = 128];
   // config contains transport-specific configuration surfaced to consumers.
   google.protobuf.Struct config = 4;
 }
@@ -98,13 +134,26 @@ message PublishRequest {
     BinaryFrame binary = 3;
   }
   // metadata carries story, run, step, or provider-specific routing hints.
-  map<string, string> metadata = 4;
+  map<string, string> metadata = 4 [(buf.validate.field).map = {
+    max_pairs: 100
+    keys: {
+      string: {
+        min_len: 1
+        max_len: 128
+      }
+    }
+    values: {
+      string: {
+        max_len: 1024
+      }
+    }
+  }];
   // payload carries the structured JSON-like business payload.
   google.protobuf.Struct payload = 5;
   // inputs carries evaluated step inputs associated with the packet.
   google.protobuf.Struct inputs = 6;
   // transports enumerates transport descriptors relevant to the packet.
-  repeated TransportDescriptor transports = 7;
+  repeated TransportDescriptor transports = 7 [(buf.validate.field).repeated.max_items = 10];
   // envelope carries ordering, partitioning, and chunking metadata for the packet.
   StreamEnvelope envelope = 8;
 }
@@ -114,11 +163,48 @@ message ControlRequest {
   // action carries the canonical action when the sender uses a standard verb.
   ControlAction action = 1;
   // metadata carries transport, session, or capability context for the action.
-  map<string, string> metadata = 2;
+  map<string, string> metadata = 2 [(buf.validate.field).map = {
+    max_pairs: 100
+    keys: {
+      string: {
+        min_len: 1
+        max_len: 128
+      }
+    }
+    values: {
+      string: {
+        max_len: 1024
+      }
+    }
+  }];
   // flow carries acknowledgement or backpressure updates piggybacked on the control stream.
   FlowControl flow = 3;
   // custom_action preserves non-standard verbs without reopening the standard enum.
-  string custom_action = 4;
+  string custom_action = 4 [(buf.validate.field).string.max_len = 128];
+}
+
+// ControlError carries structured error details for CONTROL_ACTION_ERROR responses.
+message ControlError {
+  // code is an implementation-defined application error code.
+  int32 code = 1 [(buf.validate.field).int32.gte = 0];
+  // message is a human-readable error description safe for logs and status.
+  // Do not include stack traces, secrets, internal paths, or credentials.
+  string message = 2 [(buf.validate.field).string.max_len = 2048];
+  // details carries bounded domain-specific context for debuggability.
+  map<string, string> details = 3 [(buf.validate.field).map = {
+    max_pairs: 50
+    keys: {
+      string: {
+        min_len: 1
+        max_len: 128
+      }
+    }
+    values: {
+      string: {
+        max_len: 1024
+      }
+    }
+  }];
 }
 
 // ControlResponse is sent by the connector to report readiness, capabilities, or acknowledgements.
@@ -126,17 +212,32 @@ message ControlResponse {
   // action carries the canonical action when the sender uses a standard verb.
   ControlAction action = 1;
   // metadata carries transport, session, or capability context for the action.
-  map<string, string> metadata = 2;
+  map<string, string> metadata = 2 [(buf.validate.field).map = {
+    max_pairs: 100
+    keys: {
+      string: {
+        min_len: 1
+        max_len: 128
+      }
+    }
+    values: {
+      string: {
+        max_len: 1024
+      }
+    }
+  }];
   // flow carries acknowledgement or backpressure updates piggybacked on the control stream.
   FlowControl flow = 3;
   // custom_action preserves non-standard verbs without reopening the standard enum.
-  string custom_action = 4;
+  string custom_action = 4 [(buf.validate.field).string.max_len = 128];
+  // error carries structured error details when action is CONTROL_ACTION_ERROR.
+  ControlError error = 5;
 }
 
 // PartitionAck checkpoints ordered delivery progress for a specific partition.
 message PartitionAck {
   // partition identifies the ordered stream partition being acknowledged.
-  string partition = 1;
+  string partition = 1 [(buf.validate.field).string.max_len = 128];
   // ack is the highest sequence number observed for the partition.
   uint64 ack = 2;
 }
@@ -150,7 +251,7 @@ message FlowControl {
   // credits_bytes grants additional byte-level credit to the sender.
   uint32 credits_bytes = 3;
   // partition_acks acknowledges ordered delivery progress per partition.
-  repeated PartitionAck partition_acks = 6;
+  repeated PartitionAck partition_acks = 6 [(buf.validate.field).repeated.max_items = 256];
   reserved 4, 5;
   // signal requests a pause or resume transition for the upstream sender.
   FlowControlSignal signal = 7;
@@ -158,46 +259,88 @@ message FlowControl {
 
 // StreamEnvelope carries ordering, partitioning, and chunking metadata for streamed packets.
 message StreamEnvelope {
+  option (buf.validate.message).cel = {
+    id: "stream_envelope.no_chunk_fields_without_count"
+    message: "chunk fields must be unset when chunk_count is zero"
+    expression: "this.chunk_count != 0u || (this.chunk_index == 0u && this.chunk_bytes == 0u && this.total_bytes == 0u && this.chunk_id == '')"
+  };
+  option (buf.validate.message).cel = {
+    id: "stream_envelope.chunk_id_required"
+    message: "chunk_id is required when chunk_count is greater than zero"
+    expression: "this.chunk_count == 0u || this.chunk_id.size() > 0"
+  };
+  option (buf.validate.message).cel = {
+    id: "stream_envelope.stream_id_required"
+    message: "stream_id is required when chunk_count is greater than zero"
+    expression: "this.chunk_count == 0u || this.stream_id.size() > 0"
+  };
+  option (buf.validate.message).cel = {
+    id: "stream_envelope.chunk_index_less_than_count"
+    message: "chunk_index must be less than chunk_count"
+    expression: "this.chunk_count == 0u || this.chunk_index < this.chunk_count"
+  };
+
   // stream_id identifies the logical stream within a connector or hub session.
-  string stream_id = 1;
+  string stream_id = 1 [(buf.validate.field).string.max_len = 128];
   // sequence is the monotonically increasing sequence number for the stream.
   uint64 sequence = 2;
   // partition identifies an ordered sub-stream when partitioned delivery is in use.
-  string partition = 3;
+  string partition = 3 [(buf.validate.field).string.max_len = 128];
   // Chunking metadata (binary frames only).
   // When chunk_id is set, the BinaryFrame payload is one chunk of a larger message.
   // chunk_index is zero-based; chunk_count is the total number of chunks.
   // chunk_bytes and total_bytes are optional size hints for validation/preallocation.
   // chunk_id groups multiple BinaryFrame chunks into one logical payload.
-  string chunk_id = 4;
+  string chunk_id = 4 [(buf.validate.field).string.max_len = 128];
   // chunk_index is the zero-based position of this chunk within the logical payload.
   uint32 chunk_index = 5;
   // chunk_count is the total number of chunks in the logical payload.
-  uint32 chunk_count = 6;
+  uint32 chunk_count = 6 [(buf.validate.field).uint32.lte = 256];
   // chunk_bytes is the size of this chunk in bytes when known.
-  uint32 chunk_bytes = 7;
+  uint32 chunk_bytes = 7 [(buf.validate.field).uint32.lte = 10485760];
   // total_bytes is the full logical payload size in bytes when known.
-  uint32 total_bytes = 8;
+  uint32 total_bytes = 8 [(buf.validate.field).uint32.lte = 67108864];
 }
 
 // BindingInfo describes how a connector is bound to a transport endpoint and codec set.
 message BindingInfo {
   // transport_ref is the logical transport reference selected by the runtime.
-  string transport_ref = 1;
+  string transport_ref = 1 [(buf.validate.field).string.max_len = 128];
   // driver identifies the concrete connector driver implementation.
-  string driver = 2;
+  string driver = 2 [(buf.validate.field).string.max_len = 128];
   // endpoint is the connector address (for example, unix or TCP).
-  string endpoint = 3; // connector endpoint (unix:///tmp/.. or tcp)
+  string endpoint = 3 [(buf.validate.field).string.max_len = 2048]; // connector endpoint (unix:///tmp/.. or tcp)
   // audio_codecs lists audio encodings accepted by the connector.
-  repeated string audio_codecs = 4;
+  repeated string audio_codecs = 4 [(buf.validate.field).repeated = {
+    max_items: 32
+    items: {
+      string: {
+        max_len: 64
+      }
+    }
+  }];
   // video_codecs lists video encodings accepted by the connector.
-  repeated string video_codecs = 5;
+  repeated string video_codecs = 5 [(buf.validate.field).repeated = {
+    max_items: 32
+    items: {
+      string: {
+        max_len: 64
+      }
+    }
+  }];
   // payload carries provider-specific configuration or binding metadata bytes.
-  bytes payload = 6; // provider-specific JSON/YAML
+  bytes payload = 6 [(buf.validate.field).bytes.max_len = 1048576]; // provider-specific JSON/YAML
   // binary_types lists MIME types accepted for BinaryFrame payloads.
-  repeated string binary_types = 7; // MIME types accepted for BinaryFrame
+  repeated string binary_types = 7 [(buf.validate.field).repeated = {
+    max_items: 32
+    items: {
+      string: {
+        max_len: 255
+      }
+    }
+  }]; // MIME types accepted for BinaryFrame
   // protocol_version reports the transport contract version expected by the connector.
-  string protocol_version = 8; // transport contract version (e.g., "1.0.0")
+  string protocol_version = 8 [(buf.validate.field).string.max_len = 128]; // transport contract version (e.g., "1.0.0")
 }
 
 // DataRequest carries packet data from the SDK/engram side to the connector.
@@ -212,13 +355,26 @@ message DataRequest {
     BinaryFrame binary = 3;
   }
   // metadata carries story, run, step, or provider-specific routing hints.
-  map<string, string> metadata = 4;
+  map<string, string> metadata = 4 [(buf.validate.field).map = {
+    max_pairs: 100
+    keys: {
+      string: {
+        min_len: 1
+        max_len: 128
+      }
+    }
+    values: {
+      string: {
+        max_len: 1024
+      }
+    }
+  }];
   // payload carries the structured JSON-like business payload.
   google.protobuf.Struct payload = 5;
   // inputs carries evaluated step inputs associated with the packet.
   google.protobuf.Struct inputs = 6;
   // transports enumerates transport descriptors relevant to the packet.
-  repeated TransportDescriptor transports = 7;
+  repeated TransportDescriptor transports = 7 [(buf.validate.field).repeated.max_items = 10];
   // envelope carries ordering, partitioning, and chunking metadata for the packet.
   StreamEnvelope envelope = 8;
 }
@@ -235,13 +391,26 @@ message DataResponse {
     BinaryFrame binary = 3;
   }
   // metadata carries story, run, step, or provider-specific routing hints.
-  map<string, string> metadata = 4;
+  map<string, string> metadata = 4 [(buf.validate.field).map = {
+    max_pairs: 100
+    keys: {
+      string: {
+        min_len: 1
+        max_len: 128
+      }
+    }
+    values: {
+      string: {
+        max_len: 1024
+      }
+    }
+  }];
   // payload carries the structured JSON-like business payload.
   google.protobuf.Struct payload = 5;
   // inputs carries evaluated step inputs associated with the packet.
   google.protobuf.Struct inputs = 6;
   // transports enumerates transport descriptors relevant to the packet.
-  repeated TransportDescriptor transports = 7;
+  repeated TransportDescriptor transports = 7 [(buf.validate.field).repeated.max_items = 10];
   // envelope carries ordering, partitioning, and chunking metadata for the packet.
   StreamEnvelope envelope = 8;
 }
@@ -249,7 +418,20 @@ message DataResponse {
 // HubPushRequest is sent by the hub to push DataPackets to passive connectors.
 message HubPushRequest {
   // metadata carries story, run, step, or provider-specific routing hints.
-  map<string, string> metadata = 1;
+  map<string, string> metadata = 1 [(buf.validate.field).map = {
+    max_pairs: 100
+    keys: {
+      string: {
+        min_len: 1
+        max_len: 128
+      }
+    }
+    values: {
+      string: {
+        max_len: 1024
+      }
+    }
+  }];
   // payload carries the structured JSON-like business payload.
   google.protobuf.Struct payload = 2;
   // inputs carries evaluated step inputs associated with the packet.
@@ -264,7 +446,7 @@ message HubPushRequest {
     BinaryFrame binary = 6;
   }
   // transports enumerates transport descriptors relevant to the packet.
-  repeated TransportDescriptor transports = 7;
+  repeated TransportDescriptor transports = 7 [(buf.validate.field).repeated.max_items = 10];
   // envelope carries ordering, partitioning, and chunking metadata for the packet.
   StreamEnvelope envelope = 8;
 }
@@ -272,13 +454,26 @@ message HubPushRequest {
 // HubPushResponse is sent by the connector back to the hub with the engram response.
 message HubPushResponse {
   // metadata carries story, run, step, or provider-specific routing hints.
-  map<string, string> metadata = 1;
+  map<string, string> metadata = 1 [(buf.validate.field).map = {
+    max_pairs: 100
+    keys: {
+      string: {
+        min_len: 1
+        max_len: 128
+      }
+    }
+    values: {
+      string: {
+        max_len: 1024
+      }
+    }
+  }];
   // payload carries the structured JSON-like business payload.
   google.protobuf.Struct payload = 2;
   // inputs carries evaluated step inputs associated with the packet.
   google.protobuf.Struct inputs = 3;
   // transports enumerates transport descriptors relevant to the packet.
-  repeated TransportDescriptor transports = 4;
+  repeated TransportDescriptor transports = 4 [(buf.validate.field).repeated.max_items = 10];
   // frame carries exactly one media payload alongside the structured packet context.
   oneof frame {
     // audio carries an audio payload for the packet.
@@ -293,14 +488,28 @@ message HubPushResponse {
 }
 
 // TransportConnectorService is the connector-side transport contract used by engrams and sidecars.
+// Production deployments should run this service over authenticated transport
+// channels. Callers must not trust metadata-carried identity without a
+// deployment-level authentication and authorization check such as mTLS
+// certificate SAN binding, namespace/step identity binding, or equivalent
+// workload identity enforcement.
 service TransportConnectorService {
   // Data is the bidirectional stream between the local engram and the connector.
+  // Implementations should enforce bounded message sizes, keepalive policy,
+  // backpressure, and maximum stream/session duration outside the protobuf
+  // schema. Invalid or oversized messages should be rejected at the stream
+  // boundary before conversion into runtime structures.
   rpc Data(stream DataRequest) returns (stream DataResponse);
 
   // Control is the control channel for lifecycle management and capability negotiation.
+  // Control streams should be authenticated the same way as Data streams and
+  // should rate-limit or coalesce high-frequency directives such as heartbeats
+  // and acknowledgements.
   rpc Control(stream ControlRequest) returns (stream ControlResponse);
 
   // HubPush is a hub-initiated bidirectional stream for pushing packets to passive engrams.
   // The hub connects to the connector and pushes packets, which the connector forwards to the local engram.
+  // HubPush callers should be authorized as the owning hub/runtime before the
+  // connector accepts payloads.
   rpc HubPush(stream HubPushRequest) returns (stream HubPushResponse);
 }

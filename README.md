@@ -13,6 +13,7 @@ Tractatus contains the canonical transport proto files, generated Go bindings, a
 | `gen/go/proto/transport/v1/` | Checked-in Go bindings generated via `buf generate` (kept in sync with `go.mod`). |
 | `envelope/` | Helpers for marshaling/unmarshaling the JSON envelope format used inside BinaryFrame payloads. |
 | `transport/` | Shared constants for stream type identifiers (`speech.audio.v1`, `speech.transcript.delta`, etc.). |
+| `validation/` | Runtime helper for applying Protovalidate rules embedded in generated transport bindings. |
 
 ## Current services
 
@@ -50,6 +51,53 @@ _ = stream.Send(&transportpb.ProcessRequest{
 ```
 
 The Go bindings are checked in to this repo, so consumers **do not** need protoc or buf installed.
+
+### Runtime validation
+
+The proto bindings include Protovalidate annotations for transport payload
+sizes, metadata maps, repeated fields, media bounds, and chunk envelope
+invariants. Consumers can validate generated messages through the project helper:
+
+```go
+import "github.com/bubustack/tractatus/validation"
+
+if err := validation.Validate(msg); err != nil {
+    // reject or report the invalid transport message
+}
+```
+
+Validation is explicit. gRPC streams do not reject messages automatically unless
+the caller invokes this helper or a Protovalidate runtime at the boundary.
+
+### Authentication, TLS, and stream bounds
+
+Tractatus defines message shape; it does not authenticate callers by itself.
+Production hubs and connectors should run these streams over authenticated
+transport channels and bind the presented identity to claimed metadata such as
+namespace, StoryRun, step, or connector identity. mTLS SAN checks, workload
+identity, or an equivalent deployment-specific mechanism should happen before
+accepting packets.
+
+Implementations should enforce runtime limits outside the protobuf schema:
+
+- gRPC maximum message size aligned with the payload bounds in the proto.
+- Keepalive policy for idle but healthy streams.
+- Rate limiting or coalescing for high-frequency control directives,
+  acknowledgements, heartbeats, and telemetry.
+- Maximum stream or session duration where required by the deployment.
+- Rejection of traffic from stale or superseded connectors after topology
+  cutover.
+
+### Envelope safety contract
+
+The `envelope` helpers enforce a bounded JSON envelope contract for
+`BinaryFrame` payloads:
+
+- `envelope.Unmarshal` rejects payloads larger than `envelope.MaxEnvelopeSize`
+  (10 MiB).
+- `envelope.Marshal` rejects invalid JSON in `Payload` and `Inputs`.
+- `TimestampMs` must be non-negative, and `FromBinaryFrame` rejects frame
+  timestamps that cannot fit in the Go envelope timestamp field.
 
 ## Development workflow
 

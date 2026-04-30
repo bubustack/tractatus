@@ -4,13 +4,27 @@ package transport.v1;
 
 option go_package = "github.com/bubustack/tractatus/gen/go/proto/transport/v1;transportv1";
 
+import "buf/validate/validate.proto";
 import "google/protobuf/struct.proto";
 import "transport/v1/transport.proto";
 
 // DataPacket represents a unit of data moving through the transport hub.
 message DataPacket {
   // Metadata captures story, run, and step identifiers as well as envelope hints.
-  map<string, string> metadata = 1;
+  map<string, string> metadata = 1 [(buf.validate.field).map = {
+    max_pairs: 100
+    keys: {
+      string: {
+        min_len: 1
+        max_len: 128
+      }
+    }
+    values: {
+      string: {
+        max_len: 1024
+      }
+    }
+  }];
 
   // Payload is the logical JSON payload emitted by upstream steps.
   google.protobuf.Struct payload = 2;
@@ -19,7 +33,7 @@ message DataPacket {
   google.protobuf.Struct inputs = 3;
 
   // Transports mirror the Story's declared transports for downstream introspection.
-  repeated TransportDescriptor transports = 4;
+  repeated TransportDescriptor transports = 4 [(buf.validate.field).repeated.max_items = 10];
 
   // frame carries exactly one media payload alongside the structured packet context.
   oneof frame {
@@ -51,7 +65,15 @@ message ProcessResponse {
 }
 
 // HubService routes bidirectional packet streams between runtime participants.
+// Production deployments should authenticate stream callers and bind the
+// presented identity to the claimed namespace, StoryRun, step, or connector
+// metadata before accepting packets. The protobuf contract defines message
+// shape and validation bounds; rate limiting, keepalive policy, maximum stream
+// duration, and authorization are enforced by the hub implementation.
 service HubService {
   // Process is a bidirectional stream that routes DataPackets between engrams.
+  // Implementations should validate every ProcessRequest/ProcessResponse at the
+  // stream boundary and should reject traffic from stale or superseded
+  // connectors after topology cutover.
   rpc Process (stream ProcessRequest) returns (stream ProcessResponse);
 }

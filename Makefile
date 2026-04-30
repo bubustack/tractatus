@@ -2,7 +2,7 @@ SHELL := /usr/bin/env bash -o pipefail
 .SHELLFLAGS := -ec
 
 BUF_BREAKING_BRANCH ?= buf-breaking-base
-BUF_BREAKING_TARGET ?= .git#branch=$(BUF_BREAKING_BRANCH)
+BUF_BREAKING_TARGET ?= .git\#branch=$(BUF_BREAKING_BRANCH)
 LOCALBIN ?= $(shell pwd)/bin
 GOBIN ?= $(LOCALBIN)
 GOLANGCI_LINT = $(LOCALBIN)/golangci-lint

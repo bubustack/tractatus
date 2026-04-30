@@ -7,6 +7,7 @@
 package transportv1
 
 import (
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	structpb "google.golang.org/protobuf/types/known/structpb"
@@ -285,14 +286,15 @@ var File_transport_v1_hub_proto protoreflect.FileDescriptor
 
 const file_transport_v1_hub_proto_rawDesc = "" +
 	"\n" +
-	"\x16transport/v1/hub.proto\x12\ftransport.v1\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1ctransport/v1/transport.proto\"\x90\x04\n" +
+	"\x16transport/v1/hub.proto\x12\ftransport.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1ctransport/v1/transport.proto\"\xb4\x04\n" +
 	"\n" +
-	"DataPacket\x12B\n" +
-	"\bmetadata\x18\x01 \x03(\v2&.transport.v1.DataPacket.MetadataEntryR\bmetadata\x121\n" +
+	"DataPacket\x12\\\n" +
+	"\bmetadata\x18\x01 \x03(\v2&.transport.v1.DataPacket.MetadataEntryB\x18\xbaH\x15\x9a\x01\x12\x10d\"\ar\x05\x10\x01\x18\x80\x01*\x05r\x03\x18\x80\bR\bmetadata\x121\n" +
 	"\apayload\x18\x02 \x01(\v2\x17.google.protobuf.StructR\apayload\x12/\n" +
-	"\x06inputs\x18\x03 \x01(\v2\x17.google.protobuf.StructR\x06inputs\x12A\n" +
+	"\x06inputs\x18\x03 \x01(\v2\x17.google.protobuf.StructR\x06inputs\x12K\n" +
 	"\n" +
-	"transports\x18\x04 \x03(\v2!.transport.v1.TransportDescriptorR\n" +
+	"transports\x18\x04 \x03(\v2!.transport.v1.TransportDescriptorB\b\xbaH\x05\x92\x01\x02\x10\n" +
+	"R\n" +
 	"transports\x120\n" +
 	"\x05audio\x18\x05 \x01(\v2\x18.transport.v1.AudioFrameH\x00R\x05audio\x120\n" +
 	"\x05video\x18\x06 \x01(\v2\x18.transport.v1.VideoFrameH\x00R\x05video\x123\n" +
