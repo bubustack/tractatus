@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.0](https://github.com/bubustack/tractatus/compare/v0.1.6...v0.2.0) (2026-04-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* TransportDescriptor.config field 4 was removed and reserved; downstream consumers must use typed_config.
+
+### Features
+
+* remove legacy transport descriptor config ([6aae50d](https://github.com/bubustack/tractatus/commit/6aae50d81c693686f7e365ed4e38b8ded08cf3cf))
+
 ## [0.1.6](https://github.com/bubustack/tractatus/compare/v0.1.5...v0.1.6) (2026-04-30)
 
 
