@@ -53,6 +53,19 @@ func TestProtovalidateRejectsInvalidTransportMessages(t *testing.T) {
 		"data packet transports too many": &DataPacket{
 			Transports: manyTransportDescriptors(11),
 		},
+		"transport typed config transport ref too long": &TransportDescriptor{
+			Name: "primary",
+			TypedConfig: &TransportConfig{
+				TransportRef: strings.Repeat("t", 254),
+			},
+		},
+		"transport typed config mode reason too long": &TransportDescriptor{
+			Name: "primary",
+			TypedConfig: &TransportConfig{
+				TransportRef: "livekit",
+				ModeReason:   strings.Repeat("m", 513),
+			},
+		},
 		"partition acks too many": &FlowControl{
 			PartitionAcks: manyPartitionAcks(257),
 		},
