@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.5](https://github.com/bubustack/tractatus/compare/v0.1.4...v0.1.5) (2026-04-30)
+
+
+### Features
+
+* harden transport contracts ([cd6d3d5](https://github.com/bubustack/tractatus/commit/cd6d3d507c86d0e8e82e3846eab684936f924647))
+* harden transport contracts ([8bf4c4e](https://github.com/bubustack/tractatus/commit/8bf4c4e21b50574bfd34e76fae8a5717d4a67897))
+
 ## [0.1.4](https://github.com/bubustack/tractatus/compare/v0.1.3...v0.1.4) (2026-04-19)
 
 
