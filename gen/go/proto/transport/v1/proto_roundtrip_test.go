@@ -61,14 +61,6 @@ func TestDataRequestRoundTripComplexStructuredContext(t *testing.T) {
 	if err != nil {
 		t.Fatalf("inputs struct: %v", err)
 	}
-	cfg, err := structpb.NewStruct(map[string]any{
-		"endpoint": "unix:///tmp/bubu.sock",
-		"tls":      true,
-	})
-	if err != nil {
-		t.Fatalf("transport config struct: %v", err)
-	}
-
 	roundTripDataRequest(t, &DataRequest{
 		Frame: &DataRequest_Binary{Binary: &BinaryFrame{
 			Payload:  []byte(`{"ok":true}`),
@@ -84,7 +76,10 @@ func TestDataRequestRoundTripComplexStructuredContext(t *testing.T) {
 			Name:   "primary",
 			Kind:   "grpc",
 			Mode:   "hot",
-			Config: cfg,
+			TypedConfig: &TransportConfig{
+				TransportRef: "livekit",
+				ModeReason:   "status-selected",
+			},
 		}},
 		Envelope: &StreamEnvelope{
 			StreamId:   "stream-1",
@@ -100,14 +95,6 @@ func TestDataRequestRoundTripComplexStructuredContext(t *testing.T) {
 }
 
 func TestDataRequestRoundTripTypedTransportConfig(t *testing.T) {
-	legacyCfg, err := structpb.NewStruct(map[string]any{
-		"transportRef": "livekit",
-		"modeReason":   "status-selected",
-	})
-	if err != nil {
-		t.Fatalf("legacy config struct: %v", err)
-	}
-
 	roundTripDataRequest(t, &DataRequest{
 		Frame: &DataRequest_Binary{Binary: &BinaryFrame{
 			Payload:  []byte(`{"ok":true}`),
@@ -117,7 +104,6 @@ func TestDataRequestRoundTripTypedTransportConfig(t *testing.T) {
 			Name:   "primary",
 			Kind:   "grpc",
 			Mode:   "hot",
-			Config: legacyCfg,
 			TypedConfig: &TransportConfig{
 				TransportRef: "livekit",
 				ModeReason:   "status-selected",

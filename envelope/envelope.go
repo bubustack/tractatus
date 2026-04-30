@@ -71,8 +71,16 @@ type TransportDescriptor struct {
 	Kind string `json:"kind,omitempty"`
 	// Mode identifies how the transport is used (for example, hot vs cold path).
 	Mode string `json:"mode,omitempty"`
-	// Config carries transport-specific structured configuration.
-	Config map[string]any `json:"config,omitempty"`
+	// TypedConfig carries bounded runtime descriptor metadata.
+	TypedConfig *TransportConfig `json:"typedConfig,omitempty"`
+}
+
+// TransportConfig carries safe runtime descriptor metadata.
+type TransportConfig struct {
+	// TransportRef identifies the Transport resource that produced this descriptor.
+	TransportRef string `json:"transportRef,omitempty"`
+	// ModeReason explains why the runtime selected the descriptor mode.
+	ModeReason string `json:"modeReason,omitempty"`
 }
 
 // Marshal encodes the envelope into JSON suitable for a BinaryFrame payload.

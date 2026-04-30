@@ -51,6 +51,39 @@ func TestRoundTrip(t *testing.T) {
 	}
 }
 
+func TestRoundTripPreservesTypedTransportConfig(t *testing.T) {
+	env := &Envelope{
+		Transports: []TransportDescriptor{{
+			Name: "primary",
+			Kind: "grpc",
+			Mode: "hot",
+			TypedConfig: &TransportConfig{
+				TransportRef: "livekit-default",
+				ModeReason:   "streaming-default",
+			},
+		}},
+	}
+
+	frame, err := ToBinaryFrame(env)
+	if err != nil {
+		t.Fatalf("ToBinaryFrame failed: %v", err)
+	}
+	decoded, err := FromBinaryFrame(frame)
+	if err != nil {
+		t.Fatalf("FromBinaryFrame failed: %v", err)
+	}
+	if len(decoded.Transports) != 1 {
+		t.Fatalf("expected 1 transport, got %d", len(decoded.Transports))
+	}
+	typed := decoded.Transports[0].TypedConfig
+	if typed == nil {
+		t.Fatal("expected typed transport config to round-trip")
+	}
+	if typed.TransportRef != "livekit-default" || typed.ModeReason != "streaming-default" {
+		t.Fatalf("typed config mismatch: %+v", typed)
+	}
+}
+
 func TestFromBinaryFrameRejectsMIME(t *testing.T) {
 	frame, err := ToBinaryFrame(&Envelope{})
 	if err != nil {

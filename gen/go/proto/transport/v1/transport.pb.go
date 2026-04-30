@@ -513,12 +513,6 @@ type TransportDescriptor struct {
 	Kind string `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
 	// mode identifies how the transport is used (for example, hot vs cold path).
 	Mode string `protobuf:"bytes,3,opt,name=mode,proto3" json:"mode,omitempty"`
-	// config contains transport-specific configuration surfaced to consumers.
-	// It is retained for compatibility with older producers and consumers. New
-	// consumers should prefer typed_config when present and must not use config
-	// values directly for connection, TLS, credential, or endpoint decisions
-	// without an allowlisted downstream validation step.
-	Config *structpb.Struct `protobuf:"bytes,4,opt,name=config,proto3" json:"config,omitempty"`
 	// typed_config carries bounded runtime descriptor metadata. It intentionally
 	// excludes provider connection directives such as endpoints, credentials, or
 	// TLS-disable flags; those settings belong in validated operator-owned
@@ -577,13 +571,6 @@ func (x *TransportDescriptor) GetMode() string {
 		return x.Mode
 	}
 	return ""
-}
-
-func (x *TransportDescriptor) GetConfig() *structpb.Struct {
-	if x != nil {
-		return x.Config
-	}
-	return nil
 }
 
 func (x *TransportDescriptor) GetTypedConfig() *TransportConfig {
@@ -1998,13 +1985,12 @@ const file_transport_v1_transport_proto_rawDesc = "" +
 	"\apayload\x18\x01 \x01(\fB\n" +
 	"\xbaH\az\x05\x18\x80\x80\x80\x05R\apayload\x12%\n" +
 	"\tmime_type\x18\x02 \x01(\tB\b\xbaH\x05r\x03\x18\xff\x01R\bmimeType\x12!\n" +
-	"\ftimestamp_ms\x18\x03 \x01(\x04R\vtimestampMs\"\xe2\x01\n" +
+	"\ftimestamp_ms\x18\x03 \x01(\x04R\vtimestampMs\"\xbf\x01\n" +
 	"\x13TransportDescriptor\x12\x1c\n" +
 	"\x04name\x18\x01 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x01R\x04name\x12\x1c\n" +
 	"\x04kind\x18\x02 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x01R\x04kind\x12\x1c\n" +
-	"\x04mode\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x01R\x04mode\x12/\n" +
-	"\x06config\x18\x04 \x01(\v2\x17.google.protobuf.StructR\x06config\x12@\n" +
-	"\ftyped_config\x18\x05 \x01(\v2\x1d.transport.v1.TransportConfigR\vtypedConfig\"k\n" +
+	"\x04mode\x18\x03 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x01R\x04mode\x12@\n" +
+	"\ftyped_config\x18\x05 \x01(\v2\x1d.transport.v1.TransportConfigR\vtypedConfigJ\x04\b\x04\x10\x05R\x06config\"k\n" +
 	"\x0fTransportConfig\x12-\n" +
 	"\rtransport_ref\x18\x01 \x01(\tB\b\xbaH\x05r\x03\x18\xfd\x01R\ftransportRef\x12)\n" +
 	"\vmode_reason\x18\x02 \x01(\tB\b\xbaH\x05r\x03\x18\x80\x04R\n" +
@@ -2242,69 +2228,68 @@ var file_transport_v1_transport_proto_goTypes = []any{
 	(*structpb.Struct)(nil),     // 28: google.protobuf.Struct
 }
 var file_transport_v1_transport_proto_depIdxs = []int32{
-	28, // 0: transport.v1.TransportDescriptor.config:type_name -> google.protobuf.Struct
-	7,  // 1: transport.v1.TransportDescriptor.typed_config:type_name -> transport.v1.TransportConfig
-	3,  // 2: transport.v1.PublishRequest.audio:type_name -> transport.v1.AudioFrame
-	4,  // 3: transport.v1.PublishRequest.video:type_name -> transport.v1.VideoFrame
-	5,  // 4: transport.v1.PublishRequest.binary:type_name -> transport.v1.BinaryFrame
-	20, // 5: transport.v1.PublishRequest.metadata:type_name -> transport.v1.PublishRequest.MetadataEntry
-	28, // 6: transport.v1.PublishRequest.payload:type_name -> google.protobuf.Struct
-	28, // 7: transport.v1.PublishRequest.inputs:type_name -> google.protobuf.Struct
-	6,  // 8: transport.v1.PublishRequest.transports:type_name -> transport.v1.TransportDescriptor
-	14, // 9: transport.v1.PublishRequest.envelope:type_name -> transport.v1.StreamEnvelope
-	0,  // 10: transport.v1.ControlRequest.action:type_name -> transport.v1.ControlAction
-	21, // 11: transport.v1.ControlRequest.metadata:type_name -> transport.v1.ControlRequest.MetadataEntry
-	13, // 12: transport.v1.ControlRequest.flow:type_name -> transport.v1.FlowControl
-	22, // 13: transport.v1.ControlError.details:type_name -> transport.v1.ControlError.DetailsEntry
-	0,  // 14: transport.v1.ControlResponse.action:type_name -> transport.v1.ControlAction
-	23, // 15: transport.v1.ControlResponse.metadata:type_name -> transport.v1.ControlResponse.MetadataEntry
-	13, // 16: transport.v1.ControlResponse.flow:type_name -> transport.v1.FlowControl
-	10, // 17: transport.v1.ControlResponse.error:type_name -> transport.v1.ControlError
-	12, // 18: transport.v1.FlowControl.partition_acks:type_name -> transport.v1.PartitionAck
-	1,  // 19: transport.v1.FlowControl.signal:type_name -> transport.v1.FlowControlSignal
-	3,  // 20: transport.v1.DataRequest.audio:type_name -> transport.v1.AudioFrame
-	4,  // 21: transport.v1.DataRequest.video:type_name -> transport.v1.VideoFrame
-	5,  // 22: transport.v1.DataRequest.binary:type_name -> transport.v1.BinaryFrame
-	24, // 23: transport.v1.DataRequest.metadata:type_name -> transport.v1.DataRequest.MetadataEntry
-	28, // 24: transport.v1.DataRequest.payload:type_name -> google.protobuf.Struct
-	28, // 25: transport.v1.DataRequest.inputs:type_name -> google.protobuf.Struct
-	6,  // 26: transport.v1.DataRequest.transports:type_name -> transport.v1.TransportDescriptor
-	14, // 27: transport.v1.DataRequest.envelope:type_name -> transport.v1.StreamEnvelope
-	3,  // 28: transport.v1.DataResponse.audio:type_name -> transport.v1.AudioFrame
-	4,  // 29: transport.v1.DataResponse.video:type_name -> transport.v1.VideoFrame
-	5,  // 30: transport.v1.DataResponse.binary:type_name -> transport.v1.BinaryFrame
-	25, // 31: transport.v1.DataResponse.metadata:type_name -> transport.v1.DataResponse.MetadataEntry
-	28, // 32: transport.v1.DataResponse.payload:type_name -> google.protobuf.Struct
-	28, // 33: transport.v1.DataResponse.inputs:type_name -> google.protobuf.Struct
-	6,  // 34: transport.v1.DataResponse.transports:type_name -> transport.v1.TransportDescriptor
-	14, // 35: transport.v1.DataResponse.envelope:type_name -> transport.v1.StreamEnvelope
-	26, // 36: transport.v1.HubPushRequest.metadata:type_name -> transport.v1.HubPushRequest.MetadataEntry
-	28, // 37: transport.v1.HubPushRequest.payload:type_name -> google.protobuf.Struct
-	28, // 38: transport.v1.HubPushRequest.inputs:type_name -> google.protobuf.Struct
-	3,  // 39: transport.v1.HubPushRequest.audio:type_name -> transport.v1.AudioFrame
-	4,  // 40: transport.v1.HubPushRequest.video:type_name -> transport.v1.VideoFrame
-	5,  // 41: transport.v1.HubPushRequest.binary:type_name -> transport.v1.BinaryFrame
-	6,  // 42: transport.v1.HubPushRequest.transports:type_name -> transport.v1.TransportDescriptor
-	14, // 43: transport.v1.HubPushRequest.envelope:type_name -> transport.v1.StreamEnvelope
-	27, // 44: transport.v1.HubPushResponse.metadata:type_name -> transport.v1.HubPushResponse.MetadataEntry
-	28, // 45: transport.v1.HubPushResponse.payload:type_name -> google.protobuf.Struct
-	28, // 46: transport.v1.HubPushResponse.inputs:type_name -> google.protobuf.Struct
-	6,  // 47: transport.v1.HubPushResponse.transports:type_name -> transport.v1.TransportDescriptor
-	3,  // 48: transport.v1.HubPushResponse.audio:type_name -> transport.v1.AudioFrame
-	4,  // 49: transport.v1.HubPushResponse.video:type_name -> transport.v1.VideoFrame
-	5,  // 50: transport.v1.HubPushResponse.binary:type_name -> transport.v1.BinaryFrame
-	14, // 51: transport.v1.HubPushResponse.envelope:type_name -> transport.v1.StreamEnvelope
-	16, // 52: transport.v1.TransportConnectorService.Data:input_type -> transport.v1.DataRequest
-	9,  // 53: transport.v1.TransportConnectorService.Control:input_type -> transport.v1.ControlRequest
-	18, // 54: transport.v1.TransportConnectorService.HubPush:input_type -> transport.v1.HubPushRequest
-	17, // 55: transport.v1.TransportConnectorService.Data:output_type -> transport.v1.DataResponse
-	11, // 56: transport.v1.TransportConnectorService.Control:output_type -> transport.v1.ControlResponse
-	19, // 57: transport.v1.TransportConnectorService.HubPush:output_type -> transport.v1.HubPushResponse
-	55, // [55:58] is the sub-list for method output_type
-	52, // [52:55] is the sub-list for method input_type
-	52, // [52:52] is the sub-list for extension type_name
-	52, // [52:52] is the sub-list for extension extendee
-	0,  // [0:52] is the sub-list for field type_name
+	7,  // 0: transport.v1.TransportDescriptor.typed_config:type_name -> transport.v1.TransportConfig
+	3,  // 1: transport.v1.PublishRequest.audio:type_name -> transport.v1.AudioFrame
+	4,  // 2: transport.v1.PublishRequest.video:type_name -> transport.v1.VideoFrame
+	5,  // 3: transport.v1.PublishRequest.binary:type_name -> transport.v1.BinaryFrame
+	20, // 4: transport.v1.PublishRequest.metadata:type_name -> transport.v1.PublishRequest.MetadataEntry
+	28, // 5: transport.v1.PublishRequest.payload:type_name -> google.protobuf.Struct
+	28, // 6: transport.v1.PublishRequest.inputs:type_name -> google.protobuf.Struct
+	6,  // 7: transport.v1.PublishRequest.transports:type_name -> transport.v1.TransportDescriptor
+	14, // 8: transport.v1.PublishRequest.envelope:type_name -> transport.v1.StreamEnvelope
+	0,  // 9: transport.v1.ControlRequest.action:type_name -> transport.v1.ControlAction
+	21, // 10: transport.v1.ControlRequest.metadata:type_name -> transport.v1.ControlRequest.MetadataEntry
+	13, // 11: transport.v1.ControlRequest.flow:type_name -> transport.v1.FlowControl
+	22, // 12: transport.v1.ControlError.details:type_name -> transport.v1.ControlError.DetailsEntry
+	0,  // 13: transport.v1.ControlResponse.action:type_name -> transport.v1.ControlAction
+	23, // 14: transport.v1.ControlResponse.metadata:type_name -> transport.v1.ControlResponse.MetadataEntry
+	13, // 15: transport.v1.ControlResponse.flow:type_name -> transport.v1.FlowControl
+	10, // 16: transport.v1.ControlResponse.error:type_name -> transport.v1.ControlError
+	12, // 17: transport.v1.FlowControl.partition_acks:type_name -> transport.v1.PartitionAck
+	1,  // 18: transport.v1.FlowControl.signal:type_name -> transport.v1.FlowControlSignal
+	3,  // 19: transport.v1.DataRequest.audio:type_name -> transport.v1.AudioFrame
+	4,  // 20: transport.v1.DataRequest.video:type_name -> transport.v1.VideoFrame
+	5,  // 21: transport.v1.DataRequest.binary:type_name -> transport.v1.BinaryFrame
+	24, // 22: transport.v1.DataRequest.metadata:type_name -> transport.v1.DataRequest.MetadataEntry
+	28, // 23: transport.v1.DataRequest.payload:type_name -> google.protobuf.Struct
+	28, // 24: transport.v1.DataRequest.inputs:type_name -> google.protobuf.Struct
+	6,  // 25: transport.v1.DataRequest.transports:type_name -> transport.v1.TransportDescriptor
+	14, // 26: transport.v1.DataRequest.envelope:type_name -> transport.v1.StreamEnvelope
+	3,  // 27: transport.v1.DataResponse.audio:type_name -> transport.v1.AudioFrame
+	4,  // 28: transport.v1.DataResponse.video:type_name -> transport.v1.VideoFrame
+	5,  // 29: transport.v1.DataResponse.binary:type_name -> transport.v1.BinaryFrame
+	25, // 30: transport.v1.DataResponse.metadata:type_name -> transport.v1.DataResponse.MetadataEntry
+	28, // 31: transport.v1.DataResponse.payload:type_name -> google.protobuf.Struct
+	28, // 32: transport.v1.DataResponse.inputs:type_name -> google.protobuf.Struct
+	6,  // 33: transport.v1.DataResponse.transports:type_name -> transport.v1.TransportDescriptor
+	14, // 34: transport.v1.DataResponse.envelope:type_name -> transport.v1.StreamEnvelope
+	26, // 35: transport.v1.HubPushRequest.metadata:type_name -> transport.v1.HubPushRequest.MetadataEntry
+	28, // 36: transport.v1.HubPushRequest.payload:type_name -> google.protobuf.Struct
+	28, // 37: transport.v1.HubPushRequest.inputs:type_name -> google.protobuf.Struct
+	3,  // 38: transport.v1.HubPushRequest.audio:type_name -> transport.v1.AudioFrame
+	4,  // 39: transport.v1.HubPushRequest.video:type_name -> transport.v1.VideoFrame
+	5,  // 40: transport.v1.HubPushRequest.binary:type_name -> transport.v1.BinaryFrame
+	6,  // 41: transport.v1.HubPushRequest.transports:type_name -> transport.v1.TransportDescriptor
+	14, // 42: transport.v1.HubPushRequest.envelope:type_name -> transport.v1.StreamEnvelope
+	27, // 43: transport.v1.HubPushResponse.metadata:type_name -> transport.v1.HubPushResponse.MetadataEntry
+	28, // 44: transport.v1.HubPushResponse.payload:type_name -> google.protobuf.Struct
+	28, // 45: transport.v1.HubPushResponse.inputs:type_name -> google.protobuf.Struct
+	6,  // 46: transport.v1.HubPushResponse.transports:type_name -> transport.v1.TransportDescriptor
+	3,  // 47: transport.v1.HubPushResponse.audio:type_name -> transport.v1.AudioFrame
+	4,  // 48: transport.v1.HubPushResponse.video:type_name -> transport.v1.VideoFrame
+	5,  // 49: transport.v1.HubPushResponse.binary:type_name -> transport.v1.BinaryFrame
+	14, // 50: transport.v1.HubPushResponse.envelope:type_name -> transport.v1.StreamEnvelope
+	16, // 51: transport.v1.TransportConnectorService.Data:input_type -> transport.v1.DataRequest
+	9,  // 52: transport.v1.TransportConnectorService.Control:input_type -> transport.v1.ControlRequest
+	18, // 53: transport.v1.TransportConnectorService.HubPush:input_type -> transport.v1.HubPushRequest
+	17, // 54: transport.v1.TransportConnectorService.Data:output_type -> transport.v1.DataResponse
+	11, // 55: transport.v1.TransportConnectorService.Control:output_type -> transport.v1.ControlResponse
+	19, // 56: transport.v1.TransportConnectorService.HubPush:output_type -> transport.v1.HubPushResponse
+	54, // [54:57] is the sub-list for method output_type
+	51, // [51:54] is the sub-list for method input_type
+	51, // [51:51] is the sub-list for extension type_name
+	51, // [51:51] is the sub-list for extension extendee
+	0,  // [0:51] is the sub-list for field type_name
 }
 
 func init() { file_transport_v1_transport_proto_init() }
