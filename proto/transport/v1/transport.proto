@@ -119,7 +119,24 @@ message TransportDescriptor {
   // mode identifies how the transport is used (for example, hot vs cold path).
   string mode = 3 [(buf.validate.field).string.max_len = 128];
   // config contains transport-specific configuration surfaced to consumers.
+  // It is retained for compatibility with older producers and consumers. New
+  // consumers should prefer typed_config when present and must not use config
+  // values directly for connection, TLS, credential, or endpoint decisions
+  // without an allowlisted downstream validation step.
   google.protobuf.Struct config = 4;
+  // typed_config carries bounded runtime descriptor metadata. It intentionally
+  // excludes provider connection directives such as endpoints, credentials, or
+  // TLS-disable flags; those settings belong in validated operator-owned
+  // Transport/TransportBinding configuration, not in per-packet descriptors.
+  TransportConfig typed_config = 5;
+}
+
+// TransportConfig carries safe, typed runtime descriptor metadata.
+message TransportConfig {
+  // transport_ref identifies the Transport resource that produced this descriptor.
+  string transport_ref = 1 [(buf.validate.field).string.max_len = 253];
+  // mode_reason explains why the runtime selected the descriptor mode.
+  string mode_reason = 2 [(buf.validate.field).string.max_len = 512];
 }
 
 // PublishRequest carries a packet plus structured context for pub/sub style publishers.

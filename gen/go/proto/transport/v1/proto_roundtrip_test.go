@@ -99,6 +99,33 @@ func TestDataRequestRoundTripComplexStructuredContext(t *testing.T) {
 	})
 }
 
+func TestDataRequestRoundTripTypedTransportConfig(t *testing.T) {
+	legacyCfg, err := structpb.NewStruct(map[string]any{
+		"transportRef": "livekit",
+		"modeReason":   "status-selected",
+	})
+	if err != nil {
+		t.Fatalf("legacy config struct: %v", err)
+	}
+
+	roundTripDataRequest(t, &DataRequest{
+		Frame: &DataRequest_Binary{Binary: &BinaryFrame{
+			Payload:  []byte(`{"ok":true}`),
+			MimeType: "application/json",
+		}},
+		Transports: []*TransportDescriptor{{
+			Name:   "primary",
+			Kind:   "grpc",
+			Mode:   "hot",
+			Config: legacyCfg,
+			TypedConfig: &TransportConfig{
+				TransportRef: "livekit",
+				ModeReason:   "status-selected",
+			},
+		}},
+	})
+}
+
 func TestControlRequestRoundTripAllActions(t *testing.T) {
 	for name, value := range ControlAction_value {
 		action := ControlAction(value)
