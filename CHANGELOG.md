@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.6](https://github.com/bubustack/tractatus/compare/v0.1.5...v0.1.6) (2026-04-30)
+
+
+### Features
+
+* add typed transport config ([02705a2](https://github.com/bubustack/tractatus/commit/02705a223f39c0917e5e1642c7972483e87e43e5))
+* add typed transport config ([e58512b](https://github.com/bubustack/tractatus/commit/e58512bbe28ffed0386c6d79457c532de2b715c8))
+
 ## [0.1.5](https://github.com/bubustack/tractatus/compare/v0.1.4...v0.1.5) (2026-04-30)
 
 
